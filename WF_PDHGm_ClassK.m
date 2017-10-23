@@ -31,8 +31,8 @@ unew=uold;
 theta=1;
 % sigma, tau can be tuned
 gamma = 0.01; % parameter for update theta
-sigma = 1.5;% setpsize for dual variable
-tau = 0.5;  % setpsize for primal variable
+sigma = 5.5;% setpsize for dual variable
+tau = 5.5;  % setpsize for primal variable
 for nstep=1:maxit
       ubar=unew+theta*(unew-uold);
      % update d 
