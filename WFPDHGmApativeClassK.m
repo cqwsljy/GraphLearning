@@ -42,7 +42,7 @@ P = ones(K,1); % p_{k} in reference
 D = ones(K,1); % d_{k} in reference
 
 gamma = 0.1; % parameter for update theta
-sigma = 0.01*ones(K,1);% setpsize for dual variable
+sigma = 5.5*ones(K,1);% setpsize for dual variable
 tau = 5.5*ones(K,1);  % setpsize for primal variable
 for nstep=1:maxit
     ubar=unew+theta*(unew-uold);
@@ -63,9 +63,9 @@ for nstep=1:maxit
         delta_u = uold(:,k) -unew(:,k);
         Wdelta_u = W(delta_u);
         
-        D(k,1) = norm(delta_u/sigma(k) - WTdelta_d,1);
+        P(k,1) = norm(delta_u/sigma(k) - WTdelta_d,1);
         tmp = CoeffOperGraph('*c',delta_d,1/tau(k));
-        P(k,1) = CoeffOperGraph('norm1',CoeffOperGraph('-',tmp,Wdelta_u));
+        D(k,1) = CoeffOperGraph('norm1',CoeffOperGraph('-',tmp,Wdelta_u));
     end
     
     % projection onto l1 ball
@@ -101,6 +101,7 @@ for nstep=1:maxit
     if mod(nstep,200)==0
         Tm=toc;
         display(['Step = ' num2str(nstep) '; Residual = ' num2str(residual(nstep)) '; Energy = ' num2str(energy(nstep)) '; Accuracy = ' num2str(100-error(nstep)) '%; Time Elapsed = ' num2str(Tm)]);
+        [D,P]
     end
 end
 % display('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
