@@ -2,9 +2,17 @@
 clear
 clc
 % load mnistAll.mat
-load mnistAllZM1.mat
+% load mnistAllZM1.mat
+% load('mnist49Z2.mat')
+% load mnist479.mat
+load GraphDataSyn_4CirclesZ2_5nn.mat
 
-[p,M] = size(D); %p维M个数�?
+% generate the graph
+% h=1e4;
+% Knear = 10;
+% [L,d,lambda_max]=GenerateGraph_fun(data,h,K,'ZM2'); 
+
+[p,M] = size(D); %pç»´Mä¸ªæ•°æ?
 classK = length(unique(FD));
 proInitial = 0.0357;
 Srate = round(proInitial * M /classK);
@@ -24,12 +32,9 @@ for k = 1:classK
 end
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% generate the graph
-% h=1e4;
-% Knear = 10;
-% [L,d,lambda_max]=GenerateGraph_fun(data,h,K,'ZM2'); 
+
 sindex = 1:length(d);
-G = sparse(sindex,sindex,d)-L; %邻接矩阵
+G = sparse(sindex,sindex,d)-L; %é‚»æŽ¥çŸ©é˜µ
 tol = 1e-5; % Tolerance for ADMM
 maxit = 500; % Maximum iterations
 clear sindex
