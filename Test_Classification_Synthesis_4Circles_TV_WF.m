@@ -30,9 +30,11 @@ h = 1e4;
 Knears = 5;
 % [L,d,lambda_max]=GenerateGraph_fun(D,h,Knears,'ZM2'); 
 
-G = sparse(diag(d)-L); %Adjacency Matrix
+sindex = 1:length(d);
+G = sparse(sindex,sindex,d)-L; %é‚»æŽ¥çŸ©é˜µ
 tol = 1e-5; % Tolerance for ADMM
-maxit = 600; % Maximum iterations
+maxit = 500; % Maximum iterations
+clear sindex
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 FrameType = 'Haar'; % FrameType='Linear'; % FrameType='Cubic'; % FrameType='Pseudo-Spline31';

@@ -28,10 +28,11 @@ end
 % h=1e4;
 % k=5;
 % [L,d,lambda_max]=GenerateGraph_fun(data,h,K); 
-
-G = sparse(diag(d)-L); %邻接矩阵
+sindex = 1:length(d);
+G = sparse(sindex,sindex,d)-L; %邻接矩阵
 tol = 1e-5; % Tolerance for ADMM
 maxit = 500; % Maximum iterations
+clear sindex
 
 FrameType = 'Haar'; % FrameType='Linear'; % FrameType='Cubic'; % FrameType='Pseudo-Spline31';
 [DFilters, RFilters] = ExtractMasks(FrameType);
