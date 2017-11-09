@@ -16,17 +16,23 @@ for j=1:Level
         elseif strcmp(op,'*+')
             gamma{k,j}=alpha{k,j}*a+beta{k,j}*b;
         elseif op=='p' % projection onto l-infity ball,d{k}=CoeffOperGraph('p',d{k},Thresh); 
-            if k==1
-                % gamma{k,j} = beta{k,j};
+            if k==1 && j == Level
+                 gamma{k,j} = beta{k,j};
                 % modified by jiayong Liu,2017.10.23.Reference:Wavele frame
                 % based multiphase segmentation,page 2531
-                gamma{k,j} = beta{k,j}.*(beta{k,j} < abs(alpha{k,j})) + alpha{k,j} .* (beta{k,j} >= abs(alpha{k,j}));
+                % gamma{k,j} = beta{k,j}.*(beta{k,j} < abs(alpha{k,j})) + alpha{k,j} .* (beta{k,j} >= abs(alpha{k,j}));
+                % modified by jiayong Liu ,2017.11.6
+                % gamma{k,j} = beta{k,j}.*(beta{k,j} < abs(alpha{k,j})) + alpha{k,j} .* (beta{k,j} >= abs(alpha{k,j}));
             else
                 % gamma{k,j} = beta{k,j}.*( abs(alpha{k,j}) >= beta{k,j} );
                 % modified by jiayong Liu,2017.10.23.Reference:Wavele frame
-                % based multiphase segmentation,page 2531
-                gamma{k,j} = beta{k,j} .* sign(alpha{k,j});
-                gamma{k,j} = gamma{k,j} + alpha{k,j}.*( abs(alpha{k,j}) < beta{k,j} );                
+                % based multiphase segmentation,page 2531,
+                % note that low frequency,high frequency are only one chanel,so there is no \sum_{} in fraction 
+                % in equation 2.17
+                % gamma{k,j} = beta{k,j} .* sign(alpha{k,j});
+                % gamma{k,j} = gamma{k,j} + alpha{k,j}.*( abs(alpha{k,j}) < beta{k,j} );  
+                % modified by Jiayong Liu,2017.11.6
+                gamma{k,j} = sign(alpha{k,j}).*beta{k,j}.*(beta{k,j} < abs(alpha{k,j})) + alpha{k,j} .* (beta{k,j} >= abs(alpha{k,j}));
             end
         elseif op=='h'
             if k==1
@@ -35,8 +41,9 @@ for j=1:Level
                 gamma{k,j}=alpha{k,j}.*(abs(alpha{k,j})>=beta{k,j});
             end
         elseif op=='s'
-            if k==1
+            if k==1  
                 gamma{k,j}=alpha{k,j};
+                %gamma{k,j}=(alpha{k,j}-beta{k,j}.*sign(alpha{k,j})).*(abs(alpha{k,j})>=beta{k,j});
             else
                 gamma{k,j}=(alpha{k,j}-beta{k,j}.*sign(alpha{k,j})).*(abs(alpha{k,j})>=beta{k,j});
             end

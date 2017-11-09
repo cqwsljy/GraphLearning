@@ -111,10 +111,10 @@ switch graph_method
         for i = 1:M
             dists = distnearK{i};
             id = idnearK{i};
-            dx = sqrt(sum((D(:,i) - D(:,id(end))).^2));
+            dx = sum((D(:,i) - D(:,id(end))).^2);
             for k = 1:K
                 dists = distnearK{id(k)};
-                dy = dists(end);
+                dy = dists(end)^2;
                 h2(k) = dx * dy;
             end
             A(i,id) = exp(-dists.^2./h2);
@@ -140,15 +140,14 @@ end
 A = max(A,A');
 %}
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Construct Laplacian matrix
 d=A*ones(M,1);
 % L=eye(M,M)-diag(1./b)*A;
-L=diag(d)-A;
-L=sparse(L);
-lambda_max=eigs(L,1);%
+L = diag(d)-A;
+L = sparse(L);
+lambda_max = eigs(L,1);%
 %[Usm Lambda_sm]=eigs(L,2,'sm'); % error for some data, need to fix
 %U1=Usm(:,2);
 toc

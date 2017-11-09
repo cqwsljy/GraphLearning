@@ -2,11 +2,11 @@ function Du=GraphGradientOperator(A,u)
 % u: n*1 vector
 % A: adacent matrix (diagonal is 0) 
 % compute the gradient A_ij (u(j)-u(i))
-[r,c]=find(A);
-N=size(A,1);
+[r,c] = find(A);
+N = size(A,1);
 
-s=u(c)-u(r);
-Du=sparse(r,c,s,N,N);
+s = u(c)-u(r);
+Du = sparse(r,c,s,N,N);
 % Du=u(r)
 % for i=1:N
 %     UUj(c(r==i),:)=u(c(r==i))';

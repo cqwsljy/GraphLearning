@@ -13,17 +13,23 @@ Isetc=setdiff(1:M, Iset);
 % inititalize d and b, and compute normg
 normg = 0;
 for k=1:K
-    d{k} = W(u00(:,k)); 
+    d{k} = W(u00(:,k));
     b{k} = d{k};
     normg = normg+CoeffOperGraph('norm2',d{k});
 end
+mu =0.05;
 [r Level] = size(d{1});
-%Thresh=cell{r,Level};
-%w=cell{r,Level};
+Thresh=cell(r,Level);
+w=cell(r,Level);
 for l=1:Level
     for j=1:r
-        w{j,l} = lambda*4^(-l+1)*dd;
-        Thresh{j,l} = w{j,l}/mu;
+        if (j == Level && j == 1)
+            w{j,l} = lambda*4^(-l+1)*dd/mu;
+            Thresh{j,l} = w{j,l};
+        else
+            w{j,l} = lambda*4^(-l+1)*dd/mu;
+            Thresh{j,l}=w{j,l};
+        end
     end
 end
 energy = zeros(maxit,1);
@@ -73,7 +79,7 @@ for nstep=1:maxit
         break;
     end
     Tm=toc;
-    if mod(nstep,200)==0
+    if mod(nstep,20)==0
         display(['Step = ' num2str(nstep) '; Residual = ' num2str(residual(nstep)) '; Energy = ' num2str(energy(nstep)) '; Accuracy = ' num2str(100-error(nstep)) '%; Time Elapsed = ' num2str(Tm)]);
     end
 end

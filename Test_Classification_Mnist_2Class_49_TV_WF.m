@@ -1,8 +1,9 @@
 %% test using only one labelling function for multi-class  u={1,2,...,K}
 clear
 clc
-load('mnist49.mat')
-[p,M] = size(D); %p维M个数�?
+load('mnist49Z2.mat')
+% load('E:\data\HippoOrignal811.mat')
+[p,M] = size(D); %p
 classK = length(unique(FD));
 proInitial = 0.03;
 Srate = round(proInitial * M / classK);
@@ -23,17 +24,20 @@ end
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % generate the graph
-h=1e4;
-Knears = 10;
-[L,d,lambda_max]=GenerateGraph_fun(D,h,Knears,'ZM2'); %
+h = 1e4;
+Knears = 5;
+% [L,d,lambda_max]=GenerateGraph_fun(D,h,Knears,'ZM2'); %
 
-G = sparse(diag(d)-L); %
+sindex = 1:length(d);
+
+G = sparse(sindex,sindex,d)-L; % weighted adjacent matrix
 tol = 1e-5; % Tolerance for ADMM
 maxit = 500; % Maximum iterations
+clear sindex
 
 FrameType = 'Haar'; % FrameType='Linear'; % FrameType='Cubic'; % FrameType='Pseudo-Spline31';
 [DFilters, RFilters] = ExtractMasks(FrameType);
-s = 2; % Dilation scale
+s = 2; % Dilation scale,\phi(s^{-n}),s = 2
 n = 10; % n-1 = Degree of Chebyshev Polynomial Approximation
 Lev = 1; % Level of transform
 lambda = 0.01; % As in lambda||Wu||_1
@@ -43,8 +47,8 @@ J = log(lambda_max/pi)/log(s)+Lev-1; % Dilation level to start the decomposition
 W = @(FD)(GraphWFTG_Decomp(FD,L,DFilters,n,s,J,Lev));
 WT = @(d)(GraphWFTG_Recon(d,L,RFilters,n,s,J,Lev));
 disp('WF Model...')
-% [u1,energy1,residual1,error1] = WF_PDHGm_ClassK(FD0,Iset,u00,lambda,d,tol,W,WT,maxit,1,FD);
-[u1, energy1,residual1,error1] = SplitBregGraphClassK(FD0,Iset,u00,mu,lambda,d,tol,W,WT,maxit,FD);
+[u1,energy1,residual1,error1] = WF_PDHGm_ClassK(FD0,Iset,u00,lambda,d,tol,W,WT,maxit,1,FD);
+% [u1, energy1,residual1,error1] = SplitBregGraphClassK(FD0,Iset,u00,mu,lambda,d,tol,W,WT,maxit,FD);
 
 figure
 subplot(131);plot(log10(residual1)),title('WF Residual (relative)');
@@ -53,9 +57,9 @@ subplot(133);plot((error1)),title('WF Error');
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 disp('TV Model...')
 lambda = 0.05; % As in lambda||u||_TV
-% [u2, energy2,residual2,error2] = TV_PDHGm_ClassK(FD0,Iset,u00,lambda,tol,G,maxit,1,FD);
+[u2, energy2,residual2,error2] = TV_PDHGm_ClassK(FD0,Iset,u00,lambda,tol,G,maxit,1,FD);
 % lambda = 0.05; % As in lambda||d * Wu||_{1,G}
-[u2, energy2,residual2,error2] = WF_PDHGm_ClassK(FD0,Iset,u00,lambda,d,tol,W,WT,maxit,1,FD);
+% [u2, energy2,residual2,error2] = WF_PDHGm_ClassK(FD0,Iset,u00,lambda,d,tol,W,WT,maxit,1,FD);
 
 figure
 subplot(131);plot(log10(residual2)),title('TV Residual (relative)');

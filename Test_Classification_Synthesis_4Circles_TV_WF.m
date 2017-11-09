@@ -1,8 +1,9 @@
 % test using only one labelling function for multi-class  u={1,2,...,K}
-%clear
+clear
 clc
 
-load GraphDataSyn_4Circles.mat
+% load GraphDataSyn_4Circles.mat
+load GraphDataSyn_4CirclesZ2_5nn.mat
 [p,M] = size(D); %
 classK = length(unique(FD));
 proInitial = 0.0357;
@@ -26,12 +27,12 @@ end
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % generate the graph
 h = 1e4;
-Knears = 6;
-[L,d,lambda_max]=GenerateGraph_fun(D,h,Knears,'ZM2'); %L为拉普拉斯矩阵，d为度矩阵，lambda_max L按模�?��特征�?
+Knears = 5;
+% [L,d,lambda_max]=GenerateGraph_fun(D,h,Knears,'ZM2'); 
 
 G = sparse(diag(d)-L); %Adjacency Matrix
 tol = 1e-5; % Tolerance for ADMM
-maxit = 1600; % Maximum iterations
+maxit = 600; % Maximum iterations
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 FrameType = 'Haar'; % FrameType='Linear'; % FrameType='Cubic'; % FrameType='Pseudo-Spline31';
@@ -49,19 +50,32 @@ disp('WF Model...')
 [u1, energy1,residual1,error1] = SplitBregGraphClassK(FD0,Iset,u00,mu,lambda,d,tol,W,WT,maxit,FD);
 %[u1, energy1,residual1,error1] = WF_PDHGm_ClassK(FD0,Iset,u00,lambda,d,tol,W,WT,maxit,1,FD);
 figure
-subplot(131);plot(log10(residual1)),title('WF Residual (relative)');
-subplot(132);plot(log10(energy1)),title('WF Energy');
-subplot(133);plot((error1)),title('WF Error');
+subplot(131);plot(log10(residual1),'LineWidth',2),title('WF Residual (relative)');
+xlabel('Iteration')
+ylabel('Log Of Residual')
+subplot(132);plot(log10(energy1),'LineWidth',2),title('WF Energy');
+xlabel('Iteration')
+ylabel('Log Of Energy')
+subplot(133);plot((error1),'LineWidth',2),title('WF Error');
+xlabel('Iteration')
+ylabel('Error')
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 lambda = 0.05; % As in lambda||u||_TV
 disp('TV Model...')
 [u2, energy2,residual2,error2] = TV_PDHGm_ClassK(FD0,Iset,u00,lambda,tol,G,maxit,1,FD);
 
+
 figure
-subplot(131);plot(log10(residual2)),title('TV Residual (relative)');
-subplot(132);plot(log10(energy2)),title('TV Energy');
-subplot(133);plot((error2)),title('TV Error');
+subplot(131);plot(log10(residual2),'LineWidth',2),title('TV Residual (relative)');
+xlabel('Iteration')
+ylabel('Log Of Residual')
+subplot(132);plot(log10(energy2),'LineWidth',2),title('TV Energy');
+xlabel('Iteration')
+ylabel('Log Of Energy')
+subplot(133);plot((error2),'LineWidth',2),title('TV Error');
+xlabel('Iteration')
+ylabel('Error')
 %%
 
 [~,FDr1] = max(u1,[],2);
@@ -74,8 +88,10 @@ FDr2 = FDr2-1;
 FDr2(Iset) = FD(Iset);
 Error2 = sum(abs(FDr2-FD))/(M-length(Iset))*100;
 %
-
 figure
 subplot(131);scatter(D(1,:),D(2,:),5,FD);title('Ground Truth');axis square;
 subplot(132);scatter(D(1,:),D(2,:),5,FDr1);title(['WF error = ',num2str(Error1),'%']);axis square;
 subplot(133);scatter(D(1,:),D(2,:),5,FDr2);title(['TV  error = ',num2str(Error2),'%']);axis square;
+
+
+

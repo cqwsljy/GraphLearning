@@ -48,31 +48,32 @@ while (it<=maxit&&stop==0)
     %% update p
     ubar=unew+theta*(unew-uold);
     for k=1:K
-        Du{k}=GraphGradientOperator(G,ubar(:,k));
-        p0{k}=p0{k}+sigma*Du{k}; % old p is not stored due to the large memory
+        Du{k} = GraphGradientOperator(G,ubar(:,k));
+        p0{k} = p0{k}+sigma*Du{k}; % old p is not stored due to the large memory
         % projection onto C_W ball
-        p0{k}=proj_W(p0{k},G*lambda);
+        % p0{k} = proj_W(p0{k},G*lambda);
+        p0{k} = proj_W(p0{k},ones(size(G))*lambda);
     end
     %% update u
-    uold=unew;
+    uold = unew;
     for k=1:K
-        unew(:,k)=uold(:,k)-tau*GraphGradientOperatorTranspose(G,p0{k});
-        unew(Iset,k)=FD0(Iset,k);
+        unew(:,k) = uold(:,k)-tau*GraphGradientOperatorTranspose(G,p0{k});
+        unew(Iset,k) = FD0(Iset,k);
     end
     % projection onto l1 ball
     unew = projl1p_1D(unew,1);
     
     % update  parameter: optional
     if (adap_para==1)
-        theta=1/sqrt(1+2*gamma*tau);
-        tau=theta*tau;
-        sigma=sigma/theta;
+        theta = 1/sqrt(1+2*gamma*tau);
+        tau = theta*tau;
+        sigma = sigma/theta;
     end
     
     % compute the energy and residual
-    residual(it)=norm(unew-uold,1)/norm0;
+    residual(it) = norm(unew-uold,1)/norm0;
     for k=1:K
-        energy(it)=energy(it)+sum(sum(G.*abs(Du{k})));
+        energy(it) = energy(it)+sum(sum(G.*abs(Du{k})));
     end
     % compute the error if FD_ref is given
     [~,FDr]=max(unew,[],2);
@@ -81,9 +82,12 @@ while (it<=maxit&&stop==0)
     %error(it)=sum(abs(FDr-FD_ref))/(M-length(Iset))*100;  %for 2 classes
     c=FDr==FD_ref;
     error(it)=100*(M-sum(c))/(M-length(Iset));
-    if (residual<tol) stop=1; end
-    if mod(it,200)==0
+    if (residual<tol) 
+        stop=1; 
+    end
+    if mod(it,20)==0
         Tm=toc;
+        display( num2str(sum(abs(unew(:)-uold(:)))/length(unew)) );
         display(['Step = ' num2str(it) '; Residual = ' num2str(residual(it)) '; Energy = ' num2str(energy(it)) '; Accuracy = ' num2str(100-error(it)) '%; Time Elapsed = ' num2str(Tm)]);
     end
     it=it+1;
