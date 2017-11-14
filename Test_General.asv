@@ -1,18 +1,22 @@
 %% test using only one labelling function for multi-class  u={1,2,...,K}
 clear
 clc
+% load HippoMCIcvsMCInc133.mat
+% load HippoWaveleteAD_NC_MCI_811.mat
+
 % load mnistAll.mat
 % load mnistAllZM1.mat
 % load('mnist49Z2.mat')
-% load mnist479.mat
-load GraphDataSyn_4CirclesZ2_5nn.mat
+% load mnist49Z2.mat
+
+% load GraphDataSyn_4CirclesZ2_5nn.mat
 
 % generate the graph
-% h=1e4;
-% Knear = 10;
-% [L,d,lambda_max]=GenerateGraph_fun(data,h,K,'ZM2'); 
+h=1e4;
+Knears = 10;
+[L,d,lambda_max]=GenerateGraph_fun(D,h,Knears,'ZM2'); 
 
-[p,M] = size(D); %pç»´Mä¸ªæ•°æ?
+[p,M] = size(D); %
 classK = length(unique(FD));
 proInitial = 0.0357;
 Srate = round(proInitial * M /classK);
@@ -34,9 +38,9 @@ end
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 sindex = 1:length(d);
-G = sparse(sindex,sindex,d)-L; %é‚»æŽ¥çŸ©é˜µ
+G = sparse(sindex,sindex,d)-L; %é‚»æŽ¥çŸ©é˜�?
 tol = 1e-5; % Tolerance for ADMM
-maxit = 500; % Maximum iterations
+maxit = 600; % Maximum iterations
 clear sindex
 
 FrameType = 'Haar'; % FrameType='Linear'; % FrameType='Cubic'; % FrameType='Pseudo-Spline31';
@@ -50,9 +54,13 @@ M = length(L);
 J = log(lambda_max/pi)/log(s)+Lev-1; % Dilation level to start the decomposition
 W = @(FD)(GraphWFTG_Decomp(FD,L,DFilters,n,s,J,Lev));
 WT = @(d)(GraphWFTG_Recon(d,L,RFilters,n,s,J,Lev));
-disp('WF Model...')
-% [u1,energy1,residual1,error1] = WF_PDHGm_ClassK(FD0,Iset,u00,lambda,d,tol,W,WT,maxit,1,FD);
-[u1, energy1,residual1,error1] = SplitBregGraphClassK(FD0,Iset,u00,mu,lambda,d,tol,W,WT,maxit,FD);
+disp('WF Model By PDHG...')
+[u1,energy1,residual1,error1] = WF_PDHGm_ClassK(FD0,Iset,u00,lambda,d,tol,W,WT,maxit,1,FD);
+disp('WF Model By ADMM...')
+[u2, energy2,residual2,error2] = SplitBregGraphClassK(FD0,Iset,u00,mu,lambda,d,tol,W,WT,maxit,FD);
+disp('WF Model By ADMM...')
+[u2, energy2,residual2,error2] = SplitBregGraphClassK(FD0,Iset,u00,mu,lambda,d,tol,W,WT,maxit,FD);
+
 
 figure
 subplot(131);plot(log10(residual1)),title('WF Residual (relative)');
@@ -60,8 +68,16 @@ subplot(132);plot(log10(energy1)),title('WF Energy');
 subplot(133);plot((error1)),title('WF Error');
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+
+
 lambda = 0.05; % As in lambda||u||_TV
-[u2, energy2,residual2,error2] = TV_PDHGm_ClassK(FD0,Iset,u00,lambda,tol,G,maxit,1,FD);
+
+disp('TV Model By PDHG...')
+[u3, energy3,residual3,error3] = TV_PDHGm_ClassK(FD0,Iset,u00,lambda,tol,G,maxit,1,FD);
+
+
+
+
 
 figure
 subplot(131);plot(log10(residual2)),title('TV Residual (relative)');

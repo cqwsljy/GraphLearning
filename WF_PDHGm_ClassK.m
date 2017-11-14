@@ -21,7 +21,7 @@ Thresh = w;
 for l=1:Level
     for j=1:r
         if (j == 1 && l == Level)
-            w{j,l} = 0*lambda*4^(-l+1)*dd;
+            w{j,l} = lambda*4^(-l+1)*dd;
             Thresh{j,l} = w{j,l};
         else
             w{j,l} = lambda*4^(-l+1)*dd;
@@ -47,7 +47,7 @@ for nstep=1:maxit
     % update d
     for k=1:K
         Wu{k}=W(ubar(:,k));
-        d{k}=CoeffOperGraph('*+',d{k},Wu{k},1,sigma); % compute d=d+sigma*Wu;
+        d{k} = CoeffOperGraph('*+',d{k},Wu{k},1,sigma); % compute d=d+sigma*Wu;
         % d^{k+1} = (I + sigma \partial J^*) ^{-1} * ()
         d{k} = CoeffOperGraph('p',d{k},Thresh); % projection onto l infinity ball with Thresh
     end
@@ -64,7 +64,7 @@ for nstep=1:maxit
     
     % update  parameter: optional
     %%{
-    if (adap_para==1 && nstep > 300)
+    if (adap_para==1 && nstep > 250)
         theta = 1/sqrt(1+2*gamma*tau);
         tau = theta*tau;
         sigma = sigma/theta;
@@ -74,7 +74,7 @@ for nstep=1:maxit
     % Compute the enery and residual
     residual(nstep)=norm(unew-uold,1)/norm0;
     for k=1:K
-        energy(nstep)=energy(nstep)+CoeffOperGraph('wnorm1',Wu{k},Thresh);
+        energy(nstep)=energy(nstep) + CoeffOperGraph('wnorm1',Wu{k},Thresh);
     end
     
     % compute the error if FD_ref is given

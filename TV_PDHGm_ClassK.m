@@ -21,7 +21,7 @@ normtvg=0;
 norm0=norm(u00,1);
 % compute the initial  gradient and the norm
 for k=1:K
-    Du{k}=GraphGradientOperator(G,u00(:,k));
+    Du{k} = GraphGradientOperator(G,u00(:,k));
     normtvg=normtvg+sum(sum(G.*Du{k}));
     p0{k}=zeros(size(Du{k}));
 end
@@ -41,8 +41,8 @@ stop=0;
 theta=1;
 %% parameters can be tuned
 gamma=0.01;
-sigma=sqrt(1/10)*10;
-tau=sqrt(1/10)/10;
+sigma = sqrt(1/10)*20;
+tau = sqrt(1/10)/20;
 
 while (it<=maxit&&stop==0)
     %% update p
@@ -52,8 +52,10 @@ while (it<=maxit&&stop==0)
         p0{k} = p0{k}+sigma*Du{k}; % old p is not stored due to the large memory
         % projection onto C_W ball
         % p0{k} = proj_W(p0{k},G*lambda);
-        p0{k} = proj_W(p0{k},ones(size(G))*lambda);
+        % p0{k} = proj_W(p0{k},ones(size(G))*lambda);
+        p0{k} = p0{K}.*(abs(p0{k}) <= 1) + sign(p0{K}) .* (abs(p0{k}) > 1);
     end
+    
     %% update u
     uold = unew;
     for k=1:K
@@ -64,7 +66,7 @@ while (it<=maxit&&stop==0)
     unew = projl1p_1D(unew,1);
     
     % update  parameter: optional
-    if (adap_para==1)
+    if (adap_para==1 && it > 0)
         theta = 1/sqrt(1+2*gamma*tau);
         tau = theta*tau;
         sigma = sigma/theta;
@@ -75,24 +77,20 @@ while (it<=maxit&&stop==0)
     for k=1:K
         energy(it) = energy(it)+sum(sum(G.*abs(Du{k})));
     end
+    
     % compute the error if FD_ref is given
     [~,FDr]=max(unew,[],2);
     FDr=FDr-1;
     FDr(Iset)=FD_ref(Iset);
-    %error(it)=sum(abs(FDr-FD_ref))/(M-length(Iset))*100;  %for 2 classes
     c=FDr==FD_ref;
     error(it)=100*(M-sum(c))/(M-length(Iset));
     if (residual<tol) 
         stop=1; 
     end
-    if mod(it,20)==0
+    if mod(it,2)==0
         Tm=toc;
         display( num2str(sum(abs(unew(:)-uold(:)))/length(unew)) );
         display(['Step = ' num2str(it) '; Residual = ' num2str(residual(it)) '; Energy = ' num2str(energy(it)) '; Accuracy = ' num2str(100-error(it)) '%; Time Elapsed = ' num2str(Tm)]);
     end
     it=it+1;
 end
-
-% display('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
-% display('Program Finished.')
-% display(['Step = ' num2str(nstep) '; Residual = ' num2str(residual) '; Error = ' num2str(error) '%; Time Elapsed = ' num2str(Tm)]);

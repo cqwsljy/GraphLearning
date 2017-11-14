@@ -42,8 +42,8 @@ P = ones(K,1); % p_{k} in reference
 D = ones(K,1); % d_{k} in reference
 
 gamma = 0.1; % parameter for update theta
-sigma = 5.5*ones(K,1);% setpsize for dual variable
-tau = 5.5*ones(K,1);  % setpsize for primal variable
+sigma = 0.023*ones(K,1);% setpsize for dual variable
+tau = 10*ones(K,1);  % setpsize for primal variable
 for nstep=1:maxit
     ubar=unew+theta*(unew-uold);
     uold=unew;
@@ -98,12 +98,8 @@ for nstep=1:maxit
     if residual<tol
         break;
     end
-    if mod(nstep,200)==0
+    if mod(nstep,20)==0
         Tm=toc;
         display(['Step = ' num2str(nstep) '; Residual = ' num2str(residual(nstep)) '; Energy = ' num2str(energy(nstep)) '; Accuracy = ' num2str(100-error(nstep)) '%; Time Elapsed = ' num2str(Tm)]);
-        [D,P]
     end
 end
-% display('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
-% display('Program Finished.')
-% display(['Step = ' num2str(nstep) '; Residual = ' num2str(residual) '; Error = ' num2str(error) '%; Time Elapsed = ' num2str(Tm)]);

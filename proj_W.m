@@ -15,16 +15,11 @@ W = W(:);
 
 [r,~] = find(W);
 ind = find( abs(p(r)) > W(r) );
-% p(r(ind)) = sign( p(r(ind)) ).*W(r(ind));
-
-tic
-t = full(sign( p(r(ind)) ).*W(r(ind)));
-toc
-tic
-for i = 1:length(ind)
-    j = ind(i);
-    p(r(j)) = t(i); 
-    t(i);
-end
-toc
+p(r(ind)) = sign( p(r(ind)) ).*W(r(ind));
+% t = full(sign( p(r(ind)) ).*W(r(ind)));
+% for i = 1:length(ind)
+%     j = ind(i);
+%     p(r(j)) = t(i); 
+%     t(i);
+% end
 p = reshape(p,N,N);
