@@ -1,4 +1,4 @@
-function [unew, energy,residual,error] = WF_PDHGm_ClassK(FD0,Iset,u00,lambda,dd,tol,W,WT,maxit,adap_para,FD_ref)
+function [unew, energy,residual,errors] = WF_PDHGm_ClassK(FD0,Iset,u00,lambda,dd,tol,W,WT,maxit,adap_para,FD_ref)
 % using K labelling functions
 % min lambda \sum_i|Wu_i| .s.t u_i=FD0 on Iset; u in Simplex.
 tic;
@@ -7,12 +7,12 @@ tic;
 d=cell(K,1);
 Wu=cell(K,1);
 % inititalize d and b, and compute normg
-normg=0;
-norm0=norm(u00,1);
+normg = 0;
+norm0 = norm(u00,1);
 
 for k=1:K
     d{k}=W(u00(:,k));
-    normg=normg+CoeffOperGraph('norm2',d{k});
+    normg = normg+CoeffOperGraph('norm2',d{k});
 end
 
 [r Level]=size(d{1});
@@ -30,11 +30,12 @@ for l=1:Level
     end
 end
 
-energy=zeros(maxit,1);
-residual=zeros(maxit,1);
-error=zeros(maxit,1);
-uold=zeros(M,K);
-unew=uold;
+
+energy = zeros(maxit,1);
+residual = zeros(maxit,1);
+errors = zeros(maxit,1);
+uold = u00;
+unew = uold;
 
 theta=1;
 % sigma, tau can be tuned
@@ -43,28 +44,27 @@ sigma = 0.03;% setpsize for dual variable
 tau = 50;  % setpsize for primal variable
 
 for nstep=1:maxit
-    ubar=unew+theta*(unew-uold);
-    % update d
+    ubar = unew + theta*(unew-uold);
+    uold = unew;
+    % update d and u
     for k=1:K
+        % update d
         Wu{k}=W(ubar(:,k));
         d{k} = CoeffOperGraph('*+',d{k},Wu{k},1,sigma); % compute d=d+sigma*Wu;
         % d^{k+1} = (I + sigma \partial J^*) ^{-1} * ()
         d{k} = CoeffOperGraph('p',d{k},Thresh); % projection onto l infinity ball with Thresh
-    end
-    
-    % update u
-    uold = unew;
-    for k=1:K
+
+        % update u
         unew(:,k)=uold(:,k)-tau*WT(d{k});
-        unew(Iset,k)=FD0(Iset,k);
+        % unew(Iset,k)=FD0(Iset,k);
+        unew(Iset(:,k),k)=FD0(Iset(:,k),k);
     end
-    
     % projection onto l1 ball
     unew = projl1p_1D(unew,1);
     
     % update  parameter: optional
     %%{
-    if (adap_para==1 && nstep > 250)
+    if (adap_para==1 && nstep > 350)
         theta = 1/sqrt(1+2*gamma*tau);
         tau = theta*tau;
         sigma = sigma/theta;
@@ -77,19 +77,19 @@ for nstep=1:maxit
         energy(nstep)=energy(nstep) + CoeffOperGraph('wnorm1',Wu{k},Thresh);
     end
     
-    % compute the error if FD_ref is given
+    % compute the errors if FD_ref is given
     [~,FDr] = max(unew,[],2);
-    FDr = FDr-1;FDr(Iset) = FD_ref(Iset);
+    FDr = FDr-1;FDr(Iset(:)) = FD_ref(Iset(:));
     c = FDr == FD_ref;
-    error(nstep) = 100*(M-sum(c))/(M - length(Iset));%sum(c) contains length(Iset),so not minus length(Iset) on numerator
+    errors(nstep) = 100*(M-sum(c))/(M - length(Iset(:)));%sum(c) contains length(Iset),so not minus length(Iset) on numerator
     if residual<tol
         break;
     end
     if mod(nstep,20)==0
         Tm=toc;
-        display(['Step = ' num2str(nstep) '; Residual = ' num2str(residual(nstep)) '; Energy = ' num2str(energy(nstep)) '; Accuracy = ' num2str(100-error(nstep)) '%; Time Elapsed = ' num2str(Tm)]);
+        display(['Step = ' num2str(nstep) '; Residual = ' num2str(residual(nstep)) '; Energy = ' num2str(energy(nstep)) '; Accuracy = ' num2str(100-errors(nstep)) '%; Time Elapsed = ' num2str(Tm)]);
     end
 end
 % display('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
 % display('Program Finished.')
-% display(['Step = ' num2str(nstep) '; Residual = ' num2str(residual) '; Error = ' num2str(error) '%; Time Elapsed = ' num2str(Tm)]);
+% display(['Step = ' num2str(nstep) '; Residual = ' num2str(residual) '; errors = ' num2str(errors) '%; Time Elapsed = ' num2str(Tm)]);

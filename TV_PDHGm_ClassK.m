@@ -60,7 +60,7 @@ while (it<=maxit&&stop==0)
     uold = unew;
     for k=1:K
         unew(:,k) = uold(:,k)-tau*GraphGradientOperatorTranspose(G,p0{k});
-        unew(Iset,k) = FD0(Iset,k);
+        unew(Iset(:,k),k) = FD0(Iset(:,k),k);
     end
     % projection onto l1 ball
     unew = projl1p_1D(unew,1);
@@ -81,9 +81,9 @@ while (it<=maxit&&stop==0)
     % compute the error if FD_ref is given
     [~,FDr]=max(unew,[],2);
     FDr=FDr-1;
-    FDr(Iset)=FD_ref(Iset);
+    FDr(Iset(:))=FD_ref(Iset(:));
     c=FDr==FD_ref;
-    error(it)=100*(M-sum(c))/(M-length(Iset));
+    error(it)=100*(M-sum(c))/(M-length(Iset(:)));
     if (residual<tol) 
         stop=1; 
     end

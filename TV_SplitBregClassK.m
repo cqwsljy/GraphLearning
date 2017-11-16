@@ -24,8 +24,8 @@ norm0 = norm(u00,1);
 for k = 1:K
     Du{k} = GraphGradientOperator(G,u00(:,k));
     normtvg = normtvg+sum(sum(G.*Du{k}));
-    d{k} = zeros(size(Du{k}));
-    b{k} = zeros(size(Du{k}));
+    d{k} = rand(size(Du{k}));
+    b{k} = rand(size(Du{k}));
 end
 
 %p0=Du;
@@ -35,42 +35,43 @@ residual=zeros(maxit,1);
 error=zeros(maxit,1);
 
 uold=u00;
-unew=u00;
+unew = zeros(size(u00));
 it=1;
 stop=0;
 
 
 %% parameters can be tuned
-delta = 0.001; % stepsize for least square in update u
+delta = 0.1; % stepsize for least square in update u
 dd = sum(G);
 D = diag(dd);
 L = D - G;
 A = L'*L;
 while (it<=maxit&&stop==0)
     %% update u
-    flag = 1;
-    while (flag)
-        for k=1:K
-%             Du{k} = GraphGradientOperator(G,uold(:,k)); % gradient at u^{i}
-%             unew(:,k) = uold(:,k) - delta*GraphGradientOperatorTranspose(G,Du{k} - d{k} + b{k});
-            unew(:,k) = A\(L'*GraphGradientOperatorTranspose(G,d{k}-b{k}));
-            unew(Iset,k) = FD0(Iset,k);
-        end
-        unew = projl1p_1D(unew,1);
-        residualU = norm(unew(:)-uold(:))/size(unew,1);
-        uold = unew;
-        disp(num2str(residualU));
-        flag = residualU > 1e-3;
-    end
+%     flag = 1;
+%     while (flag)
+%         uold = unew;
+%         for k=1:K
+% %             Du{k} = GraphGradientOperator(G,uold(:,k)); % gradient at u^{i}
+% %             unew(:,k) = uold(:,k) - delta*GraphGradientOperatorTranspose(G,Du{k} - d{k} + b{k});
+%             unew(:,k) = uold(:,k) - delta*(A*uold(:,k) - L'*GraphGradientOperatorTranspose(G,d{k} - b{k}));
+%             unew(Iset(:,k),k) = FD0(Iset(:,k),k);
+%         end
+%         unew = projl1p_1D(unew,1);
+%         residualU = norm(unew(:)-uold(:))/size(unew,1);
+%         disp(num2str(residualU));
+%         flag = residualU > 1e-8;
+%     end
+    uold = CGforTV(L,G,uold,d,b,FD0,Iset);
     % projection onto l1 ball
-%     unew = projl1p_1D(unew,1);
+     unew = projl1p_1D(unew,1);
 %     uold = unew;
     %% update d
     
     for k=1:K
         Du{k} = GraphGradientOperator(G,unew(:,k)); % gradient at u^{i+1}
         tmp = Du{k} + b{k};
-        d{k} = (tmp-1).*(tmp > 1/mu)./mu + (tmp + 1).*(tmp < 1/mu)/mu;
+        d{k} = G.*(tmp-1).*(tmp > G/mu)./mu + G.*(tmp + 1).*(tmp < G/mu)/mu;
     end
 
     %% update b
@@ -90,16 +91,16 @@ while (it<=maxit&&stop==0)
     % compute the error if FD_ref is given
     [~,FDr] = max(unew,[],2);
     FDr = FDr-1;
-    FDr(Iset) = FD_ref(Iset);
+    FDr(Iset(:)) = FD_ref(Iset(:));
     c = FDr == FD_ref;
-    error(it)=100*(M-sum(c))/(M-length(Iset));
+    error(it)=100*(M-sum(c))/(M-length(Iset(:)));
 
     if (residual<tol) 
         stop=1; 
     end
-    if mod(it,20)==0
+    if mod(it,1)==0
         Tm = toc;
-        display( num2str(sum(abs(unew(:)-uold(:)))/length(unew)) );
+        % display( num2str(sum(abs(unew(:)-uold(:)))/length(unew)) );
         display(['Step = ' num2str(it) '; Residual = ' num2str(residual(it)) '; Energy = ' num2str(energy(it)) '; Accuracy = ' num2str(100-error(it)) '%; Time Elapsed = ' num2str(Tm)]);
     end
     it = it+1;

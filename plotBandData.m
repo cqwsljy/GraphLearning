@@ -13,6 +13,8 @@
 % X = [x,y];
 % [L,d,lambda_max]=GenerateGraph_fun(X',h,Knears,'ZM'); 
 % L = full(L);
+%  画圆环图
+
 [u,v] = eig(L);
 [r,c] = sort(diag(v));
 x2 = u(:,1);

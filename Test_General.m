@@ -33,7 +33,7 @@ for k = 1:classK
 	eval('Isetk=index(1:Srate);');
 	eval('FD0(Isetk,k) = 1;');
 	eval('u00(Isetk,k) = 1;');
-    eval('Iset = [Iset;Isetk];');
+    eval('Iset = [Iset,Isetk];');
 end
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

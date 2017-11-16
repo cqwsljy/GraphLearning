@@ -2,6 +2,7 @@ function Du=GraphGradientOperator(A,u)
 % u: n*1 vector
 % A: adacent matrix (diagonal is 0) 
 % compute the gradient A_ij (u(j)-u(i))
+% gradient of u = w^{1-q}(u(y) - u(x)),when q = 1, grad(u)(x,y) = u(y) - u(x)
 [r,c] = find(A);
 N = size(A,1);
 
