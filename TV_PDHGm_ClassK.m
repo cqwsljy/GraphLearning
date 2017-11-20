@@ -7,49 +7,49 @@ function [unew, energy,residual,error]=TV_PDHGm_ClassK(FD0,Iset,u00,lambda,tol,G
 % u=zeros(size(forig));
 tic;
 
-[M,K]=size(u00);
+[M,K] = size(u00);
 % find the index of nonzero G
 %[r,c]=find(G);
 
-Du=cell(K,1);
-p0=cell(K,1);
+Du = cell(K,1);
+p0 = cell(K,1);
 
 %Isetc=setdiff(1:M, Iset);
 
 % inititalize d and b, and compute normg
-normtvg=0;
+%normtvg=0;
 norm0=norm(u00,1);
 % compute the initial  gradient and the norm
 for k=1:K
     Du{k} = GraphGradientOperator(G,u00(:,k));
-    normtvg=normtvg+sum(sum(G.*Du{k}));
+    % normtvg=normtvg+sum(sum(G.*Du{k}));
     p0{k}=zeros(size(Du{k}));
 end
 
 %p0=Du;
 
-energy=zeros(maxit,1);
-residual=zeros(maxit,1);
-error=zeros(maxit,1);
+energy = zeros(maxit,1);
+residual = zeros(maxit,1);
+error = zeros(maxit,1);
 
-uold=u00;
-unew=u00;
-it=1;
-stop=0;
+uold = u00;
+unew = u00;
+it = 1;
+stop = 0;
 
 
-theta=1;
+theta = 1;
 %% parameters can be tuned
-gamma=0.01;
-sigma = sqrt(1/10)*20;
-tau = sqrt(1/10)/20;
+gamma = 0.01;
+sigma = sqrt(1/10)*100;
+tau = sqrt(1/10)/100;
 
-while (it<=maxit&&stop==0)
+while (it<=maxit && stop== 0)
     %% update p
-    ubar=unew+theta*(unew-uold);
+    ubar=unew + theta*(unew - uold);
     for k=1:K
-        Du{k} = GraphGradientOperator(G,ubar(:,k));
-        p0{k} = p0{k}+sigma*Du{k}; % old p is not stored due to the large memory
+        Du{k} = GraphGradientOperator(G,ubar(:,k)); 
+        p0{k} = p0{k} + sigma*Du{k}; % old p is not stored due to the large memory
         % projection onto C_W ball
         % p0{k} = proj_W(p0{k},G*lambda);
         % p0{k} = proj_W(p0{k},ones(size(G))*lambda);
@@ -59,14 +59,14 @@ while (it<=maxit&&stop==0)
     %% update u
     uold = unew;
     for k=1:K
-        unew(:,k) = uold(:,k)-tau*GraphGradientOperatorTranspose(G,p0{k});
+        unew(:,k) = uold(:,k) - tau*GraphGradientOperatorTranspose(G,p0{k});
         unew(Iset(:,k),k) = FD0(Iset(:,k),k);
     end
     % projection onto l1 ball
     unew = projl1p_1D(unew,1);
     
     % update  parameter: optional
-    if (adap_para==1 && it > 0)
+    if (adap_para==1 && it > 100)
         theta = 1/sqrt(1+2*gamma*tau);
         tau = theta*tau;
         sigma = sigma/theta;
@@ -75,16 +75,16 @@ while (it<=maxit&&stop==0)
     % compute the energy and residual
     residual(it) = norm(unew-uold,1)/norm0;
     for k=1:K
-        energy(it) = energy(it)+sum(sum(G.*abs(Du{k})));
+        energy(it) = energy(it) + sum(sum(G.*abs(Du{k})));
     end
     
     % compute the error if FD_ref is given
     [~,FDr]=max(unew,[],2);
-    FDr=FDr-1;
-    FDr(Iset(:))=FD_ref(Iset(:));
-    c=FDr==FD_ref;
+    FDr = FDr-1;
+    FDr(Iset(:)) = FD_ref(Iset(:));
+    c = FDr == FD_ref;
     error(it)=100*(M-sum(c))/(M-length(Iset(:)));
-    if (residual<tol) 
+    if (residual(it) < tol) 
         stop=1; 
     end
     if mod(it,2)==0

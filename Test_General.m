@@ -35,14 +35,12 @@ for k = 1:classK
 	eval('u00(Isetk,k) = 1;');
     eval('Iset = [Iset,Isetk];');
 end
-
+tol = 1e-5; % Tolerance
+maxit = 600; % Maximum iterations
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 sindex = 1:length(d);
 G = sparse(sindex,sindex,d)-L; %é‚»æŽ¥çŸ©é˜�?
-tol = 1e-5; % Tolerance for ADMM
-maxit = 600; % Maximum iterations
-clear sindex
+% clear sindex
 
 FrameType = 'Haar'; % FrameType='Linear'; % FrameType='Cubic'; % FrameType='Pseudo-Spline31';
 [DFilters, RFilters] = ExtractMasks(FrameType);

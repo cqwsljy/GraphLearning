@@ -1,67 +1,57 @@
 function unew = CGforTV(L,G,uold,d,b,FD0,Iset)
+format long
 Classk = size(uold,2);
 n = size(L,1);
 tol = 1e-4;
 r = cell(Classk,1);
-y = cell(Classk,1);
+p = cell(Classk,1);
+r2 = cell(Classk,1);
+Du = cell(1,Classk);
 for k = 1:Classk
     r{k} = GraphGradientOperatorTranspose(G,d{k} - b{k}) - L*uold(:,k);
-    y{k} = r{k};  
+    p{k} = r{k};  
 end
-
+unew = uold;
+energy = zeros(Classk,1);
 for i = 0:(n-1)
-    unew = uold;
+    uold = unew;
     for k = 1:Classk
-        alpha = (r{k}'*r{k})/(y{k}'*L*y{k});
-        unew(:,k) = uold(:,k)+alpha*y{k};
-        r2 = GraphGradientOperatorTranspose(G,d{k} - b{k}) - L*uold(:,k); 
-        if ((norm(r2) <= tol)||(k == n-1))
-           break;
+        alpha = (r{k}'*r{k})/(p{k}'*L*p{k});
+        unew(:,k) = uold(:,k) + alpha*p{k};
+        r2{k} = r{k} - alpha*L*p{k};
+        if ((norm(r2{k}) <= tol)||(i == n-1))
+           continue;
         end
-        beta = norm(r2)^2/norm(r{k})^2;
-        y{k} = r2 + beta*y{k};
-        r{k} = r2;
-        uold(Iset,k) = FD0(Iset,k);
+        beta = norm(r2{k})^2/norm(r{k})^2;
+        p{k} = r2{k} + beta*p{k};
+        r{k} = r2{k};
 %         disp(num2str(norm(unew(:) - uold(:))/length(unew)));
-        disp(num2str(norm(r2)));
+%         disp(num2str(norm(r2{k})));
+%        Du{k} = GraphGradientOperator(G,unew(:,k)); % gradient at u^{i+1}
+%        energy(k) = sum(sum(G.*abs(Du{k})))
     end
+    for k = 1:Classk
+        unew(Iset(:,k),:) = 0; 
+    end
+    for k = 1:Classk
+        unew(Iset(:,k),k) = FD0(Iset(:,k),k);
+    end
+    
+
+    flag = 1;
+
+    for k = 1:Classk
+        flag = flag * (norm(r2{k}) <= tol);
+        energy = unew(:,k)'*L'*L*unew(:,k) - 2*unew(:,k)'*L*GraphGradientOperatorTranspose(G,d{k} - b{k});
+    end
+    % disp(num2str(sum(abs(unew(:) - uold(:)))/length(uold)));
+    %disp(num2str(sum(energy)));
+    if (mod(i,100) ==0)
+        disp(num2str(sum(abs(unew(:) - uold(:)))/length(uold)));
+    end
+    if (flag  == 1)
+        break
+    end
+    unew = projl1p_1D(unew,1);
 end
-
-% function x = cg(A,b)
-% tol=1e-10;
-% r = b + A*b;
-% w = -r;
-% z = A*w;
-% s = w'*z;
-% t = (r'*w)/s;
-% x = -b + t*w;
-% for k = 1:numel(b);
-%     r = r - t*z;
-%     if( norm(r) < tol )
-%        return;
-%     end
-%     B = (r'*z)/s;
-%     w = -r + B*w;
-%     z = A*w;
-%     s = w'*z;
-%     t = (r'*w)/s;
-%     x = x + t*w;
-% end
-
-% function x=Gongetidu2(A,b,x0,epsa)
-% n=size(A,1);
-% x=x0;
-% r=b-A*x;
-% d=r;
-% for k=0:(n-1)
-%     alpha=(r'*r)/(d'*A*d);
-%     x=x+alpha*d;
-%     r2=b-A*x; 
-%     if ((norm(r2)<=epsa)||(k==n-1))
-%        break;
-%     end
-%     beta=norm(r2)^2/norm(r)^2;
-%     d=r2+beta*d;
-%     r=r2;
-% end
-% % 
+disp(num2str(sum(abs(unew(:) - uold(:)))/length(uold)));

@@ -18,12 +18,12 @@ deltab = cell(K,1);
 %Isetc=setdiff(1:M, Iset);
 
 % inititalize d and b, and compute normg
-%normtvg = 0;
+normtvg = 0;
 norm0 = norm(u00,1);
 % compute the initial  gradient and the norm
 for k = 1:K
     Du{k} = GraphGradientOperator(G,u00(:,k));
-    %normtvg = normtvg+sum(sum(G.*Du{k}));
+    normtvg = normtvg+sum(sum(G.*Du{k}));
     d{k} = rand(size(Du{k}));
     b{k} = rand(size(Du{k}));
 end
@@ -41,7 +41,7 @@ stop=0;
 
 
 %% parameters can be tuned
-delta = 1; % stepsize for least square in update u
+delta = 0.1; % stepsize for least square in update u
 dd = sum(G);
 D = diag(dd);
 L = D - G;
@@ -70,16 +70,13 @@ while (it<=maxit&&stop==0)
     
     for k=1:K
         Du{k} = GraphGradientOperator(G,unew(:,k)); % gradient at u^{i+1}
-        d{k} = soft(Du{k} + b{k},G/mu);
-        % tmp = Du{k} + b{k};
-        %c1 = (tmp > G/mu);
-        %c2 = (tmp <- G/mu);
-        % c = (tmp <= G/mu) & (tmp >=- G/mu);
-        %d{k}(c) = 0;
-        %d{k}(c1) = G.*(tmp-1)/mu;
-        %d{k}(c2) = G.*(tmp + 1)/mu; 
-        %d{k} = (G.*(tmp-1)./mu).*(tmp > G/mu) + (G.*(tmp + 1)/mu).*(tmp < G/mu);
-        %d{k}(c) = 0;
+        tmp = Du{k} + b{k};
+        c1 = (tmp > G/mu);
+        c2 = (tmp >- G/mu);
+        c = c1 & c2;
+        d{k}(c) = 0;
+        d{k}(c1)
+        d{k} = G.*(tmp-1).*(tmp > G/mu)./mu + G.*(tmp + 1).*(tmp < G/mu)/mu;
     end
 
     %% update b
