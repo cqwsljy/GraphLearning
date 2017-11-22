@@ -14,7 +14,7 @@ for k=1:K
     d{k}=W(u00(:,k));
     normg = normg+CoeffOperGraph('norm2',d{k});
 end
-
+mu = 0.05;
 [r Level]=size(d{1});
 w = cell(r,Level);
 Thresh = w;
@@ -22,10 +22,10 @@ for l=1:Level
     for j=1:r
         if (j == 1 && l == Level)
             w{j,l} = lambda*4^(-l+1)*dd;
-            Thresh{j,l} = w{j,l};
+            Thresh{j,l} = w{j,l}/mu;
         else
             w{j,l} = lambda*4^(-l+1)*dd;
-            Thresh{j,l} = w{j,l};
+            Thresh{j,l} = w{j,l}/mu;
         end
     end
 end
@@ -34,7 +34,8 @@ end
 energy = zeros(maxit,1);
 residual = zeros(maxit,1);
 errors = zeros(maxit,1);
-uold = u00;
+% uold = rand(size(u00));
+uold=zeros(M,K);
 unew = uold;
 
 theta=1;
@@ -57,23 +58,33 @@ for nstep=1:maxit
         % update u
         unew(:,k)=uold(:,k)-tau*WT(d{k});
         % unew(Iset,k)=FD0(Iset,k);
-        unew(Iset(:,k),k)=FD0(Iset(:,k),k);
+        % unew(Iset(:,k),k)=FD0(Iset(:,k),k);
+        
     end
     % projection onto l1 ball
+    for k = 1:K
+        unew(Iset(:,k),:) = 0; 
+    end
+    for k = 1:K
+        unew(Iset(:,k),k) = FD0(Iset(:,k),k);
+    end
     unew = projl1p_1D(unew,1);
     
+
     % update  parameter: optional
-    %%{
-    if (adap_para==1 && nstep > 350)
+    %{
+    if (adap_para==1 && nstep > 0)
         theta = 1/sqrt(1+2*gamma*tau);
         tau = theta*tau;
         sigma = sigma/theta;
     end
     %}
+
     
     % Compute the enery and residual
     residual(nstep)=norm(unew-uold,1)/norm0;
     for k=1:K
+        Wu{k}=W(unew(:,k));
         energy(nstep)=energy(nstep) + CoeffOperGraph('wnorm1',Wu{k},Thresh);
     end
     

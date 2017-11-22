@@ -42,8 +42,8 @@ end
 energy = zeros(maxit,1);
 residual = zeros(maxit,1);
 errors = zeros(maxit,1);
-% uold=zeros(M,K);
-uold = u00;
+uold=zeros(M,K);
+% uold = rand(size(u00));
 unew = uold;
 
 theta = 1;
@@ -87,7 +87,7 @@ for nstep=1:maxit
     unew = projl1p_1D(unew,1);
     
     % update parameters
-    if nstep > 100
+    if nstep > 0
         for k = 1:K
             if P(k) > s*D(k)*Delta
                 tau(k) = tau(k)/(1-alpha(k));
@@ -104,6 +104,7 @@ for nstep=1:maxit
     % Compute the enery and residual
     residual(nstep)=norm(unew-uold,1)/norm0;
     for k=1:K
+        Wu{k}=W(unew(:,k));
         energy(nstep)=energy(nstep)+CoeffOperGraph('wnorm1',Wu{k},Thresh);
     end
     

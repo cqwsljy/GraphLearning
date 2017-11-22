@@ -41,8 +41,8 @@ stop = 0;
 theta = 1;
 %% parameters can be tuned
 gamma = 0.01;
-sigma = sqrt(1/10)*10;
-tau = sqrt(1/10)/10;
+sigma = sqrt(1/10)*100;
+tau = sqrt(1/10)/100;
 
 while (it<=maxit && stop== 0)
     %% update p
@@ -53,7 +53,7 @@ while (it<=maxit && stop== 0)
         % projection onto C_W ball
         p0{k} = proj_W(p0{k},G*lambda);
         % p0{k} = proj_W(p0{k},ones(size(G))*lambda);
-        %p0{k} = p0{K}.*(abs(p0{k}) <= lambda) + sign(p0{K}) .* (abs(p0{k}) > lambda);
+        % p0{k} = p0{K}.*(abs(p0{k}) <= 1) + sign(p0{K}) .* (abs(p0{k}) > 1);
     end
     
     %% update u
@@ -74,7 +74,7 @@ while (it<=maxit && stop== 0)
     unew = projl1p_1D(unew,1);
     
     % update  parameter: optional
-    if (adap_para==1 && it > 50)
+    if (adap_para==1 && it > 100)
         theta = 1/sqrt(1+2*gamma*tau);
         tau = theta*tau;
         sigma = sigma/theta;
@@ -83,6 +83,7 @@ while (it<=maxit && stop== 0)
     % compute the energy and residual
     residual(it) = norm(unew-uold,1)/norm0;
     for k=1:K
+        Du{k} = GraphGradientOperator(G,unew(:,k));
         energy(it) = energy(it) + sum(sum(G.*abs(Du{k})));
     end
     

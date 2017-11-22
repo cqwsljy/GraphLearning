@@ -20,9 +20,11 @@ deltab = cell(K,1);
 % inititalize d and b, and compute normg
 %normtvg = 0;
 norm0 = norm(u00,1);
+uold = zeros(size(u00));
+unew = zeros(size(u00));
 % compute the initial  gradient and the norm
 for k = 1:K
-    Du{k} = GraphGradientOperator(G,u00(:,k));
+    Du{k} = GraphGradientOperator(G,uold(:,k));
     %normtvg = normtvg+sum(sum(G.*Du{k}));
     d{k} = rand(size(Du{k}));
     b{k} = rand(size(Du{k}));
@@ -34,8 +36,7 @@ energy=zeros(maxit,1);
 residual=zeros(maxit,1);
 error=zeros(maxit,1);
 
-uold=u00;
-unew = zeros(size(u00));
+
 it=1;
 stop=0;
 
@@ -62,9 +63,10 @@ while (it<=maxit&&stop==0)
 %         disp(num2str(residualU));
 %         flag = residualU > 1e-8;
 %     end
+    uold = unew;
     unew = CGforTV(L,G,uold,d,b,FD0,Iset);
     % projection onto l1 ball
-    unew = projl1p_1D(unew,1);
+    % unew = projl1p_1D(unew,1);
 %     uold = unew;
     %% update d
     
