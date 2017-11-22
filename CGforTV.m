@@ -2,7 +2,7 @@ function unew = CGforTV(L,G,uold,d,b,FD0,Iset)
 format long
 Classk = size(uold,2);
 n = size(L,1);
-tol = 1e-4;
+tol = 1e-6;
 r = cell(Classk,1);
 p = cell(Classk,1);
 r2 = cell(Classk,1);
@@ -46,12 +46,12 @@ for i = 0:(n-1)
     end
     % disp(num2str(sum(abs(unew(:) - uold(:)))/length(uold)));
     %disp(num2str(sum(energy)));
-    if (mod(i,100) ==0)
-        disp(num2str(sum(abs(unew(:) - uold(:)))/length(uold)));
-    end
+%    if (mod(i,100) ==0)
+%        disp(num2str(sum(abs(unew(:) - uold(:)))/length(uold)));
+%    end
     if (flag  == 1)
         break
     end
     unew = projl1p_1D(unew,1);
 end
-disp(num2str(sum(abs(unew(:) - uold(:)))/length(uold)));
+% disp(num2str(sum(abs(unew(:) - uold(:)))/length(uold)));

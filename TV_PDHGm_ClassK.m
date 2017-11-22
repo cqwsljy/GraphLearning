@@ -1,4 +1,4 @@
-function [unew, energy,residual,error]=TV_PDHGm_ClassK(FD0,Iset,u00,lambda,tol,G,maxit,adap_para,FD_ref)
+function [unew, energy,residual,error]=TV_PDHGm_K(FD0,Iset,u00,lambda,tol,G,maxit,adap_para,FD_ref)
 % G is weight  matrix
 % min lambda \sum_i|u_i|_WTV
 % s.t u_i=FD0(:,i), sum (u_i)=1 i_i\geq 0
@@ -41,8 +41,8 @@ stop = 0;
 theta = 1;
 %% parameters can be tuned
 gamma = 0.01;
-sigma = sqrt(1/10)*100;
-tau = sqrt(1/10)/100;
+sigma = sqrt(1/10)*10;
+tau = sqrt(1/10)/10;
 
 while (it<=maxit && stop== 0)
     %% update p
@@ -51,22 +51,30 @@ while (it<=maxit && stop== 0)
         Du{k} = GraphGradientOperator(G,ubar(:,k)); 
         p0{k} = p0{k} + sigma*Du{k}; % old p is not stored due to the large memory
         % projection onto C_W ball
-        % p0{k} = proj_W(p0{k},G*lambda);
+        p0{k} = proj_W(p0{k},G*lambda);
         % p0{k} = proj_W(p0{k},ones(size(G))*lambda);
-        p0{k} = p0{K}.*(abs(p0{k}) <= 1) + sign(p0{K}) .* (abs(p0{k}) > 1);
+        %p0{k} = p0{K}.*(abs(p0{k}) <= lambda) + sign(p0{K}) .* (abs(p0{k}) > lambda);
     end
     
     %% update u
     uold = unew;
     for k=1:K
         unew(:,k) = uold(:,k) - tau*GraphGradientOperatorTranspose(G,p0{k});
+        %unew(Iset(:,k),k) = FD0(Iset(:,k),k);
+    end
+
+    for k = 1:K
+        unew(Iset(:,k),:) = 0; 
+    end
+    for k = 1:K
         unew(Iset(:,k),k) = FD0(Iset(:,k),k);
     end
+
     % projection onto l1 ball
     unew = projl1p_1D(unew,1);
     
     % update  parameter: optional
-    if (adap_para==1 && it > 100)
+    if (adap_para==1 && it > 50)
         theta = 1/sqrt(1+2*gamma*tau);
         tau = theta*tau;
         sigma = sigma/theta;

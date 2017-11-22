@@ -3,7 +3,7 @@ clear
 clc
 % load HippoMCIcvsMCInc133.mat
 % load HippoWaveleteAD_NC_MCI_811.mat
-% laod HippoWaveleteAD_NC_416.mat
+% load HippoWaveleteAD_NC_416.mat
 
 % load mnistAll.mat
 % load mnistAllZM1.mat
@@ -11,6 +11,7 @@ clc
 % load mnist49Z2.mat
 
 % load GraphDataSyn_4CirclesZ2_5nn.mat
+% load('E:\data\GraphDataSyn_3Circles.mat')
 
 % generate the graph
 % h=1e4;
@@ -19,7 +20,7 @@ clc
 
 [p,M] = size(D); %
 classK = length(unique(FD));
-proInitial = 0.0357;
+proInitial = 0.03;
 Srate = round(proInitial * M /classK);
 
 FD0 = zeros(M,classK);
@@ -36,7 +37,7 @@ for k = 1:classK
     eval('Iset = [Iset,Isetk];');
 end
 tol = 1e-5; % Tolerance
-maxit = 600; % Maximum iterations
+maxit = 100; % Maximum iterations
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 sindex = 1:length(d);
 G = sparse(sindex,sindex,d)-L; %é‚»æŽ¥çŸ©é˜�?
