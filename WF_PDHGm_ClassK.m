@@ -35,7 +35,7 @@ energy = zeros(maxit,1);
 residual = zeros(maxit,1);
 errors = zeros(maxit,1);
 % uold = rand(size(u00));
-uold=zeros(M,K);
+uold = zeros(M,K);
 unew = uold;
 
 theta=1;
@@ -44,6 +44,8 @@ gamma = 0.01; % parameter for update theta
 sigma = 0.03;% setpsize for dual variable
 tau = 50;  % setpsize for primal variable
 
+
+disp(['Initial is ',num2str(100*length(Iset(:))/M),'%'])
 for nstep=1:maxit
     ubar = unew + theta*(unew-uold);
     uold = unew;
@@ -85,7 +87,7 @@ for nstep=1:maxit
     residual(nstep)=norm(unew-uold,1)/norm0;
     for k=1:K
         Wu{k}=W(unew(:,k));
-        energy(nstep)=energy(nstep) + CoeffOperGraph('wnorm1',Wu{k},Thresh);
+        energy(nstep)=energy(nstep) + CoeffOperGraph('wnorm1',Wu{k},w);
     end
     
     % compute the errors if FD_ref is given

@@ -32,8 +32,11 @@ energy = zeros(maxit,1);
 residual = zeros(maxit,1);
 error = zeros(maxit,1);
 
-uold = u00;
-unew = u00;
+uold=zeros(M,K);
+unew = uold;
+%uold = u00;
+%unew = u00;
+
 it = 1;
 stop = 0;
 
@@ -41,8 +44,8 @@ stop = 0;
 theta = 1;
 %% parameters can be tuned
 gamma = 0.01;
-sigma = sqrt(1/10)*100;
-tau = sqrt(1/10)/100;
+sigma = sqrt(1/10)*10;
+tau = sqrt(1/10)/10;
 
 while (it<=maxit && stop== 0)
     %% update p

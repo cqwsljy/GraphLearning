@@ -43,6 +43,8 @@ energy = zeros(maxit,1);
 residual = zeros(maxit,1);
 errors = zeros(maxit,1);
 uold=zeros(M,K);
+WTdelta_d = cell(K,1);
+delta_d = cell(K,1);
 % uold = rand(size(u00));
 unew = uold;
 
@@ -58,6 +60,7 @@ D = ones(K,1); % d_{k} in reference
 
 sigma = 0.03*ones(K,1);% setpsize for dual variable
 tau = 50*ones(K,1);  % setpsize for primal variable
+
 for nstep=1:maxit
     ubar = unew + theta*(unew-uold);
     uold = unew;
@@ -65,26 +68,30 @@ for nstep=1:maxit
     for k=1:K
         % update d
         Wu{k}=W(ubar(:,k));
-        dold = d{k};
+        doldk = d{k};
         d{k} = CoeffOperGraph('*+',d{k},Wu{k},1,sigma(k)); % compute d=d+sigma*Wu;
         d{k} = CoeffOperGraph('p',d{k},Thresh); % projection onto l infinity ball with Thresh
-        delta_d = CoeffOperGraph('-',dold,d{k});
-        WTdelta_d = WT(delta_d);
+        delta_d{k} = CoeffOperGraph('-',doldk,d{k});
+        WTdelta_d{k} = WT(delta_d{k});
         
         % update u
         unew(:,k) = uold(:,k)-tau(k)*WT(d{k});
         unew(Iset(:,k),k) = FD0(Iset(:,k),k);
-        delta_u = uold(:,k) -unew(:,k);
-        Wdelta_u = W(delta_u);
-        
-        % compute P and D values
-        P(k,1) = norm(delta_u/sigma(k) - WTdelta_d,1);
-        tmp = CoeffOperGraph('*c',delta_d,1/tau(k));
-        D(k,1) = CoeffOperGraph('norm1',CoeffOperGraph('-',tmp,Wdelta_u));
+
     end
-    
     % projection onto l1 ball
     unew = projl1p_1D(unew,1);
+
+    for k = 1:K
+        % compute P and D values
+        delta_u = uold(:,k) -unew(:,k);
+        Wdelta_u = W(delta_u);
+
+        P(k,1) = norm(delta_u/sigma(k) - WTdelta_d{k},1);
+        tmp = CoeffOperGraph('*c',delta_d{k},1/tau(k));
+        D(k,1) = CoeffOperGraph('norm1',CoeffOperGraph('-',tmp,Wdelta_u));
+    end
+
     
     % update parameters
     if nstep > 0
@@ -105,7 +112,7 @@ for nstep=1:maxit
     residual(nstep)=norm(unew-uold,1)/norm0;
     for k=1:K
         Wu{k}=W(unew(:,k));
-        energy(nstep)=energy(nstep)+CoeffOperGraph('wnorm1',Wu{k},Thresh);
+        energy(nstep)=energy(nstep)+CoeffOperGraph('wnorm1',Wu{k},w);
     end
     
     % compute the errors if FD_ref is given

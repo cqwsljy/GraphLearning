@@ -17,4 +17,4 @@ D = noise;
 D(:,1:2) = D(:,1:2) + x;
 D = D';
 FD = [y1;y2;y3];
-subplot(131);scatter(D(1,:),D(2,:),5,FD);title('Ground Truth');axis square;
+scatter(D(1,:),D(2,:),5,FD);title('Ground Truth');axis square;

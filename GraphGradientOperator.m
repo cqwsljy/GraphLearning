@@ -7,7 +7,8 @@ function Du=GraphGradientOperator(A,u)
 N = size(A,1);
 
 s = u(c)-u(r);
-Du = sparse(r,c,s,N,N);
+% Du = sparse(r,c,s,N,N);
+Du = A.*sparse(r,c,s,N,N);
 % Du=u(r)
 % for i=1:N
 %     UUj(c(r==i),:)=u(c(r==i))';

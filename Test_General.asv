@@ -61,9 +61,6 @@ disp('WF Model By PDHG...')
 disp('WF Model By ADMM...')
 [u2, energy2,residual2,error2] = SplitBregGraphClassK(FD0,Iset,u00,mu,lambda,d,tol,W,WT,maxit,FD);
 
-disp('WF Model By Adaptive PDHG...')
-[u5, energy5,residual5,error5] = WFPDHGmApativeClassK(FD0,Iset,u00,lambda,d,tol,W,WT,maxit,1,FD);
-
 
 
 figure
@@ -133,84 +130,7 @@ Error2 = sum(abs(FDr2-FD))/(M-length(Iset))*100;
 % ylabel('Wu高频部分')
 % title('部分小波系数')
 
-%% plot PDHG and ADMM
 subplot(121);
 plot(energy1,'LineWidth',1.5);hold on
 plot(energy2,'LineWidth',1.5)
-legend('PDHG','ADMM')
-xlabel('iteration')
-ylabel('energy')
-
-subplot(122);
-plot(error1,'LineWidth',1.5);hold on
-plot(error2,'LineWidth',1.5)
-xlabel('iteration')
-ylabel('error')
-legend('PDHG','ADMM')
-
-%% plot Adaptive PDHG and PDHG and ADMM
-subplot(121);
-plot(energy1,'LineWidth',1.5);hold on
-plot(energy2,'LineWidth',1.5);
-plot(energy5,'LineWidth',1.5)
-legend('Adaptive PDHG','ADMM','PDHG')
-xlabel('iteration')
-ylabel('energy')
-
-subplot(122);
-plot(error1,'LineWidth',1.5);hold on
-plot(error2,'LineWidth',1.5)
-plot(error5,'LineWidth',1.5)
-xlabel('iteration')
-ylabel('error')
-legend('Adaptive PDHG','ADMM','PDHG')
-
-%% plot haar and linear
-subplot(231);
-plot(energy11,'LineWidth',1.5);hold on
-plot(energy1,'LineWidth',1.5)
-legend('Haar','Linear')
-xlabel('iteration')
-ylabel('energy')
-title('WF PDHG')
-
-subplot(232);
-plot(energy21,'LineWidth',1.5);hold on
-plot(energy2,'LineWidth',1.5)
-legend('Haar','Linear')
-xlabel('iteration')
-ylabel('energy')
-title('WF ADMM')
-
-subplot(233);
-plot(energy51,'LineWidth',1.5);hold on
-plot(energy5,'LineWidth',1.5)
-legend('Haar','Linear')
-xlabel('iteration')
-ylabel('energy')
-title('WF Adaptive PDHG')
-
-
-subplot(234);
-plot(error11,'LineWidth',1.5);hold on
-plot(error1,'LineWidth',1.5)
-legend('Haar','Linear')
-xlabel('iteration')
-ylabel('error')
-title('WF PDHG')
-
-subplot(235);
-plot(error21,'LineWidth',1.5);hold on
-plot(error2,'LineWidth',1.5)
-legend('Haar','Linear')
-xlabel('iteration')
-ylabel('error')
-title('WF ADMM')
-
-subplot(236);
-plot(error51,'LineWidth',1.5);hold on
-plot(error5,'LineWidth',1.5)
-legend('Haar','Linear')
-xlabel('iteration')
-ylabel('error')
-title('WF Adaptive PDHG')
+legend(['W'])

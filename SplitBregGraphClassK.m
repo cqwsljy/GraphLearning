@@ -17,7 +17,7 @@ for k=1:K
     b{k} = d{k};
     normg = normg+CoeffOperGraph('norm2',d{k});
 end
-mu =0.05;
+mu =0.08;
 [r Level] = size(d{1});
 Thresh=cell(r,Level);
 w=cell(r,Level);
@@ -36,9 +36,10 @@ end
 energy = zeros(maxit,1);
 residual = zeros(maxit,1);
 errors = zeros(maxit,1);
-u = u00;
 
-disp(['Initial is ',num2str(100*length(Iset)/M),'%'])
+u = zeros(size(u00));
+
+disp(['Initial is ',num2str(100*length(Iset(:))/M),'%'])
 for nstep=1:maxit
     
     % update u
@@ -48,6 +49,13 @@ for nstep=1:maxit
 %         u(Isetc,k) = WTdb(Isetc);
 %         u(Iset(:,k),k) = FD0(Iset(:,k),k);
         u(:,k) = WT(CoeffOperGraph('-',d{k},b{k}));
+        % u(Iset(:,k),k) = FD0(Iset(:,k),k);
+    end
+    % projection onto l1 ball
+    for k = 1:K
+        u(Iset(:,k),:) = 0; 
+    end
+    for k = 1:K
         u(Iset(:,k),k) = FD0(Iset(:,k),k);
     end
     u = projl1p_1D(u,1);
