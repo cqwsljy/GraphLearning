@@ -42,31 +42,36 @@ stop=0;
 
 
 %% parameters can be tuned
-delta = 1; % stepsize for least square in update u
+delta = 0.0071; % stepsize for least square in update u
 dd = sum(G);
 D = diag(dd);
 L = D - G;
 A = L'*L;
 while (it<=maxit&&stop==0)
     %% update u
-%     flag = 1;
-%     while (flag)
-%         uold = unew;
-%         for k=1:K
-% %             Du{k} = GraphGradientOperator(G,uold(:,k)); % gradient at u^{i}
-% %             unew(:,k) = uold(:,k) - delta*GraphGradientOperatorTranspose(G,Du{k} - d{k} + b{k});
-%             unew(:,k) = uold(:,k) - delta*(A*uold(:,k) - L'*GraphGradientOperatorTranspose(G,d{k} - b{k}));
+    flag = 1;
+    while (flag)
+        uold = unew;
+        for k=1:K
+            unew(:,k) = uold(:,k) - delta*( GraphGradientOperatorTranspose(G, GraphGradientOperator(G,uold(:,k)) - d{k} + b{k}) );
+        end
+%         for k = 1:K
+%             unew(Iset(:,k),:) = 0; 
+%         end
+%         for k = 1:K
 %             unew(Iset(:,k),k) = FD0(Iset(:,k),k);
 %         end
 %         unew = projl1p_1D(unew,1);
-%         residualU = norm(unew(:)-uold(:))/size(unew,1);
-%         disp(num2str(residualU));
-%         flag = residualU > 1e-8;
-%     end
-    uold = unew;
-    unew = CGforTV(L,G,uold,d,b,FD0,Iset);
+        residualU = norm(unew(:)-uold(:))/size(unew,1);
+        disp(num2str(residualU));
+        flag = residualU > 1e-7;
+    end
+
+%     uold = unew;
+%     unew = CGforTV(L,G,uold,d,b,FD0,Iset);
+
     % projection onto l1 ball
-    % unew = projl1p_1D(unew,1);
+    unew = projl1p_1D(unew,1);
 %     uold = unew;
     %% update d
     
@@ -104,7 +109,6 @@ while (it<=maxit&&stop==0)
     FDr(Iset(:)) = FD_ref(Iset(:));
     c = FDr == FD_ref;
     error(it)=100*(M-sum(c))/(M-length(Iset(:)));
-
     if (residual<tol) 
         stop=1; 
     end

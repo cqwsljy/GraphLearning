@@ -44,8 +44,8 @@ stop = 0;
 theta = 1;
 %% parameters can be tuned
 gamma = 0.01;
-sigma = sqrt(1/10)*10;
-tau = sqrt(1/10)/10;
+sigma = sqrt(1/10)*50;
+tau = sqrt(1/10)/50;
 
 while (it<=maxit && stop== 0)
     %% update p
@@ -77,11 +77,13 @@ while (it<=maxit && stop== 0)
     unew = projl1p_1D(unew,1);
     
     % update  parameter: optional
+    %{
     if (adap_para==1 && it > 100)
         theta = 1/sqrt(1+2*gamma*tau);
         tau = theta*tau;
         sigma = sigma/theta;
     end
+    %}
     
     % compute the energy and residual
     residual(it) = norm(unew-uold,1)/norm0;

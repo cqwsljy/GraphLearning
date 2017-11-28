@@ -1,6 +1,6 @@
 %% test using only one labelling function for multi-class  u={1,2,...,K}
-clear
-clc
+% clear
+% clc
 % load HippoMCIcvsMCInc133.mat
 % load HippoWaveleteAD_NC_MCI_811.mat
 % load HippoWaveleteAD_NC_416.mat
@@ -14,13 +14,17 @@ clc
 % load('E:\data\GraphDataSyn_3Circles.mat')
 
 % generate the graph
-h=1e4;
-Knears = 10;
-[L,d,lambda_max]=GenerateGraph_fun(D,h,Knears,'ZM2'); 
+% h=1e4;
+% Knears = 10;
+% [L,d,lambda_max]=GenerateGraph_fun(D,h,Knears,'ZM2'); 
 
 [p,M] = size(D); %
 classK = length(unique(FD));
-proInitial = 0.03;
+proInitials = [0.01,0.03,0.1,0.15,0.2];
+errors = zeros(length(proInitials),3);
+pro = 1;
+for proInitial = proInitials
+    
 Srate = round(proInitial * M /classK);
 
 FD0 = zeros(M,classK);
@@ -37,7 +41,7 @@ for k = 1:classK
     eval('Iset = [Iset,Isetk];');
 end
 tol = 1e-5; % Tolerance
-maxit = 100; % Maximum iterations
+maxit = 600; % Maximum iterations
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 sindex = 1:length(d);
 G = sparse(sindex,sindex,d)-L; %茅鈥毬幻ε铰ッ嘎┟┧溌?
@@ -61,8 +65,12 @@ disp('WF Model By PDHG...')
 disp('WF Model By ADMM...')
 [u2, energy2,residual2,error2] = SplitBregGraphClassK(FD0,Iset,u00,mu,lambda,d,tol,W,WT,maxit,FD);
 
-
-
+disp('WF Model By Adaptive PDHG...')
+[u5, energy5,residual5,error5] = WFPDHGmApativeClassK(FD0,Iset,u00,lambda,d,tol,W,WT,maxit,1,FD);
+errors(pro,:) = [100 - min(error1),100 - min(error2),100 - min(error5)];
+pro = pro + 1;
+end
+%{
 figure
 subplot(131);plot(log10(residual1)),title('WF Residual (relative)');
 subplot(132);plot(log10(energy1)),title('WF Energy');
@@ -129,8 +137,104 @@ Error2 = sum(abs(FDr2-FD))/(M-length(Iset))*100;
 % xlabel('x')
 % ylabel('Wu高频部分')
 % title('部分小波系数')
+%}
+%{
 
+%% plot PDHG and ADMM
 subplot(121);
 plot(energy1,'LineWidth',1.5);hold on
 plot(energy2,'LineWidth',1.5)
-legend(['W'])
+legend('PDHG','ADMM')
+xlabel('iteration')
+ylabel('energy')
+
+subplot(122);
+plot(error1,'LineWidth',1.5);hold on
+plot(error2,'LineWidth',1.5)
+xlabel('iteration')
+ylabel('error')
+legend('PDHG','ADMM')
+
+%% plot Adaptive PDHG and PDHG and ADMM
+subplot(121);
+plot(energy1,'LineWidth',1.5);hold on
+plot(energy2,'LineWidth',1.5);
+plot(energy5,'LineWidth',1.5)
+legend('Adaptive PDHG','ADMM','PDHG')
+xlabel('iteration')
+ylabel('energy')
+
+subplot(122);
+plot(error1,'LineWidth',1.5);hold on
+plot(error2,'LineWidth',1.5)
+plot(error5,'LineWidth',1.5)
+xlabel('iteration')
+ylabel('error')
+legend('Adaptive PDHG','ADMM','PDHG')
+
+%% plot haar and linear
+subplot(231);
+plot(energy11,'LineWidth',1.5);hold on
+plot(energy1,'LineWidth',1.5)
+legend('Haar','Linear')
+xlabel('iteration')
+ylabel('energy')
+title('WF PDHG')
+
+subplot(232);
+plot(energy21,'LineWidth',1.5);hold on
+plot(energy2,'LineWidth',1.5)
+legend('Haar','Linear')
+xlabel('iteration')
+ylabel('energy')
+title('WF ADMM')
+
+subplot(233);
+plot(energy51,'LineWidth',1.5);hold on
+plot(energy5,'LineWidth',1.5)
+legend('Haar','Linear')
+xlabel('iteration')
+ylabel('energy')
+title('WF Adaptive PDHG')
+
+
+subplot(234);
+plot(error11,'LineWidth',1.5);hold on
+plot(error1,'LineWidth',1.5)
+legend('Haar','Linear')
+xlabel('iteration')
+ylabel('error')
+title('WF PDHG')
+
+subplot(235);
+plot(error21,'LineWidth',1.5);hold on
+plot(error2,'LineWidth',1.5)
+legend('Haar','Linear')
+xlabel('iteration')
+ylabel('error')
+title('WF ADMM')
+
+subplot(236);
+plot(error51,'LineWidth',1.5);hold on
+plot(error5,'LineWidth',1.5)
+legend('Haar','Linear')
+xlabel('iteration')
+ylabel('error')
+title('WF Adaptive PDHG')
+
+
+
+%%
+
+[~,FDr1] = max(u1,[],2);
+FDr1 = FDr1-1;
+[uc,FDr2] = max(u2,[],2);
+FDr2 = FDr2-1;
+
+subplot(131);
+scatter(D(1,:),D(2,:),5,FD);title('Ground Truth');axis square;
+subplot(132);
+scatter(D(1,:),D(2,:),5,FDr1);title('PDHG');axis square;
+subplot(133);
+scatter(D(1,:),D(2,:),5,FDr2);title('ADMM');axis square;
+%}

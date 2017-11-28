@@ -48,7 +48,7 @@ FrameType = 'Linear'; %Haar, FrameType='Linear'; % FrameType='Cubic'; % FrameTyp
 s = 2; % Dilation scale
 n = 10; % n-1 = Degree of Chebyshev Polynomial Approximation
 Lev = 1; % Level of transform
-lambda = 0.01; % As in lambda||Wu||_1
+lambda = 1; % As in lambda||Wu||_1
 mu = 1e-2; % Parameter from ADMM
 M = length(L);
 J = log(lambda_max/pi)/log(s)+Lev-1; % Dilation level to start the decomposition
@@ -58,12 +58,20 @@ WT = @(d)(GraphWFTG_Recon(d,L,RFilters,n,s,J,Lev));
 disp('WF Model By PDHG...')
 [u1,energy1,residual1,error1] = WF_PDHGm_ClassK(FD0,Iset,u00,lambda,d,tol,W,WT,maxit,1,FD);
 
-disp('WF Model By ADMM...')
-[u2, energy2,residual2,error2] = SplitBregGraphClassK(FD0,Iset,u00,mu,lambda,d,tol,W,WT,maxit,FD);
-
 disp('WF Model By Adaptive PDHG...')
 [u5, energy5,residual5,error5] = WFPDHGmApativeClassK(FD0,Iset,u00,lambda,d,tol,W,WT,maxit,1,FD);
 
+disp('WF Model By ADMM...')
+[u2, energy2,residual2,error2] = SplitBregGraphClassK(FD0,Iset,u00,mu,lambda,d,tol,W,WT,maxit,FD);
+
+
+% energy11 = energy1;
+% energy21 = energy1;
+% energy51 = energy1;
+% 
+% error11 = error1;
+% error21 = error2;
+% error51 = error5;
 
 
 figure
@@ -150,12 +158,18 @@ legend('PDHG','ADMM')
 
 %% plot Adaptive PDHG and PDHG and ADMM
 subplot(121);
-plot(energy1,'LineWidth',1.5);hold on
-plot(energy2,'LineWidth',1.5);
-plot(energy5,'LineWidth',1.5)
-legend('Adaptive PDHG','ADMM','PDHG')
+plot(log10(energy1),'LineWidth',1.5);hold on
+plot(log10(energy2),'LineWidth',1.5);
+plot(log10(energy5),'LineWidth',1.5)
+legend('PDHGm','ADMM','Adaptive PDHG')
 xlabel('iteration')
-ylabel('energy')
+ylabel('log10(energy)')
+
+semilogy(energy1,'LineWidth',1.5);hold on
+semilogy(energy5,'LineWidth',1.5)
+legend('PDHGm','Adaptive PDHG')
+
+
 
 subplot(122);
 plot(error1,'LineWidth',1.5);hold on
@@ -163,7 +177,7 @@ plot(error2,'LineWidth',1.5)
 plot(error5,'LineWidth',1.5)
 xlabel('iteration')
 ylabel('error')
-legend('Adaptive PDHG','ADMM','PDHG')
+legend('PDHGm','ADMM','Adaptive PDHG')
 
 %% plot haar and linear
 subplot(231);
@@ -172,7 +186,7 @@ plot(energy1,'LineWidth',1.5)
 legend('Haar','Linear')
 xlabel('iteration')
 ylabel('energy')
-title('WF PDHG')
+title('WF PDHGm')
 
 subplot(232);
 plot(energy21,'LineWidth',1.5);hold on
@@ -197,7 +211,7 @@ plot(error1,'LineWidth',1.5)
 legend('Haar','Linear')
 xlabel('iteration')
 ylabel('error')
-title('WF PDHG')
+title('WF PDHGm')
 
 subplot(235);
 plot(error21,'LineWidth',1.5);hold on
@@ -214,3 +228,20 @@ legend('Haar','Linear')
 xlabel('iteration')
 ylabel('error')
 title('WF Adaptive PDHG')
+
+
+
+%%
+
+[~,FDr1] = max(u1,[],2);
+FDr1 = FDr1-1;
+[uc,FDr2] = max(u2,[],2);
+FDr2 = FDr2-1;
+
+subplot(131);
+scatter(D(1,:),D(2,:),5,FD);title('Ground Truth');axis square;
+subplot(132);
+scatter(D(1,:),D(2,:),5,FDr1);title('PDHGm');axis square;
+subplot(133);
+scatter(D(1,:),D(2,:),5,FDr2);title('ADMM');axis square;
+

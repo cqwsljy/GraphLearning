@@ -2,13 +2,14 @@ function unew = CGforTV(L,G,uold,d,b,FD0,Iset)
 format long
 Classk = size(uold,2);
 n = size(L,1);
-tol = 1e-6;
+tol = 1e-10;
 r = cell(Classk,1);
 p = cell(Classk,1);
 r2 = cell(Classk,1);
 Du = cell(1,Classk);
 for k = 1:Classk
     r{k} = GraphGradientOperatorTranspose(G,d{k} - b{k}) - L*uold(:,k);
+    %r{k} = b{k} - L*uold(:,k);
     p{k} = r{k};  
 end
 unew = uold;
@@ -30,28 +31,31 @@ for i = 0:(n-1)
 %        Du{k} = GraphGradientOperator(G,unew(:,k)); % gradient at u^{i+1}
 %        energy(k) = sum(sum(G.*abs(Du{k})))
     end
+    %%{
     for k = 1:Classk
         unew(Iset(:,k),:) = 0; 
     end
     for k = 1:Classk
         unew(Iset(:,k),k) = FD0(Iset(:,k),k);
     end
-    
+    %}
 
     flag = 1;
 
     for k = 1:Classk
         flag = flag * (norm(r2{k}) <= tol);
-        energy = unew(:,k)'*L'*L*unew(:,k) - 2*unew(:,k)'*L*GraphGradientOperatorTranspose(G,d{k} - b{k});
+        %energy = unew(:,k)'*L'*L*unew(:,k) - 2*unew(:,k)'*L*GraphGradientOperatorTranspose(G,d{k} - b{k});
     end
     % disp(num2str(sum(abs(unew(:) - uold(:)))/length(uold)));
     %disp(num2str(sum(energy)));
 %    if (mod(i,100) ==0)
 %        disp(num2str(sum(abs(unew(:) - uold(:)))/length(uold)));
 %    end
+
+    unew = projl1p_1D(unew,1);
+
     if (flag  == 1)
         break
     end
-    unew = projl1p_1D(unew,1);
 end
-% disp(num2str(sum(abs(unew(:) - uold(:)))/length(uold)));
+disp(num2str(sum(abs(unew(:) - uold(:)))/length(uold)));

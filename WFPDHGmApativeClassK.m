@@ -45,6 +45,7 @@ errors = zeros(maxit,1);
 uold=zeros(M,K);
 WTdelta_d = cell(K,1);
 delta_d = cell(K,1);
+Wue = cell(K,1);
 % uold = rand(size(u00));
 unew = uold;
 
@@ -58,9 +59,9 @@ eta = 0.5;
 P = ones(K,1); % p_{k} in reference
 D = ones(K,1); % d_{k} in reference
 
-sigma = 0.03*ones(K,1);% setpsize for dual variable
-tau = 50*ones(K,1);  % setpsize for primal variable
-
+sigma = 0.02*ones(K,1);% setpsize for dual variable
+tau = 60*ones(K,1);  % setpsize for primal variable
+disp(['Initial is ',num2str(100*length(Iset(:))/M),'%'])
 for nstep=1:maxit
     ubar = unew + theta*(unew-uold);
     uold = unew;
@@ -76,9 +77,18 @@ for nstep=1:maxit
         
         % update u
         unew(:,k) = uold(:,k)-tau(k)*WT(d{k});
-        unew(Iset(:,k),k) = FD0(Iset(:,k),k);
-
+        
+        % unew(Iset(:,k),k) = FD0(Iset(:,k),k);
     end
+    unew = projl1p_1D(unew,1);
+    for k = 1:K
+        Wue{k} = W(unew(:,k));
+        unew(Iset(:,k),:) = 0; 
+    end
+    for k = 1:K
+        unew(Iset(:,k),k) = FD0(Iset(:,k),k);
+    end
+
     % projection onto l1 ball
     unew = projl1p_1D(unew,1);
 
@@ -111,8 +121,8 @@ for nstep=1:maxit
     % Compute the enery and residual
     residual(nstep)=norm(unew-uold,1)/norm0;
     for k=1:K
-        Wu{k}=W(unew(:,k));
-        energy(nstep)=energy(nstep)+CoeffOperGraph('wnorm1',Wu{k},w);
+        %Wu{k}=W(unew(:,k));
+        energy(nstep)=energy(nstep)+CoeffOperGraph('wnorm1',Wue{k},w);
     end
     
     % compute the errors if FD_ref is given

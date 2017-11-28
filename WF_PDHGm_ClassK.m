@@ -6,6 +6,7 @@ tic;
 [M,K]=size(u00);
 d=cell(K,1);
 Wu=cell(K,1);
+Wue = cell(K,1);
 % inititalize d and b, and compute normg
 normg = 0;
 norm0 = norm(u00,1);
@@ -40,9 +41,9 @@ unew = uold;
 
 theta=1;
 % sigma, tau can be tuned
-gamma = 0.01; % parameter for update theta
-sigma = 0.03;% setpsize for dual variable
-tau = 50;  % setpsize for primal variable
+% gamma = 0.01; % parameter for update theta
+sigma = 0.02;% setpsize for dual variable
+tau = 60;  % setpsize for primal variable
 
 
 disp(['Initial is ',num2str(100*length(Iset(:))/M),'%'])
@@ -64,7 +65,9 @@ for nstep=1:maxit
         
     end
     % projection onto l1 ball
+    unew = projl1p_1D(unew,1);
     for k = 1:K
+        Wue{k} = W(unew(:,k));
         unew(Iset(:,k),:) = 0; 
     end
     for k = 1:K
@@ -87,7 +90,7 @@ for nstep=1:maxit
     residual(nstep)=norm(unew-uold,1)/norm0;
     for k=1:K
         Wu{k}=W(unew(:,k));
-        energy(nstep)=energy(nstep) + CoeffOperGraph('wnorm1',Wu{k},w);
+        energy(nstep)=energy(nstep) + CoeffOperGraph('wnorm1',Wue{k},w);
     end
     
     % compute the errors if FD_ref is given
