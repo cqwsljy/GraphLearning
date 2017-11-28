@@ -50,21 +50,25 @@ A = L'*L;
 while (it<=maxit&&stop==0)
     %% update u
     flag = 1;
+    r = 1;
     while (flag)
+        r = r + 1;
         uold = unew;
         for k=1:K
             unew(:,k) = uold(:,k) - delta*( GraphGradientOperatorTranspose(G, GraphGradientOperator(G,uold(:,k)) - d{k} + b{k}) );
         end
-%         for k = 1:K
-%             unew(Iset(:,k),:) = 0; 
-%         end
-%         for k = 1:K
-%             unew(Iset(:,k),k) = FD0(Iset(:,k),k);
-%         end
+        for k = 1:K
+            unew(Iset(:,k),:) = 0; 
+        end
+        for k = 1:K
+            unew(Iset(:,k),k) = FD0(Iset(:,k),k);
+        end
 %         unew = projl1p_1D(unew,1);
         residualU = norm(unew(:)-uold(:))/size(unew,1);
-        disp(num2str(residualU));
-        flag = residualU > 1e-7;
+        flag = residualU > 1e-6;
+        if(mod(r,100) == 0)
+            disp(num2str(residualU));
+        end
     end
 
 %     uold = unew;
@@ -77,7 +81,7 @@ while (it<=maxit&&stop==0)
     
     for k=1:K
         Du{k} = GraphGradientOperator(G,unew(:,k)); % gradient at u^{i+1}
-        d{k} = soft(Du{k} + b{k},G/mu);
+        d{k} = soft(Du{k} + b{k},1/mu);
         % tmp = Du{k} + b{k};
         %c1 = (tmp > G/mu);
         %c2 = (tmp <- G/mu);
