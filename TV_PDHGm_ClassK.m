@@ -44,8 +44,12 @@ stop = 0;
 theta = 1;
 %% parameters can be tuned
 gamma = 0.01;
-sigma = sqrt(1/10)*50;
-tau = sqrt(1/10)/50;
+sigma = sqrt(1/10)*10;
+tau = sqrt(1/10)/100;
+
+% sigma = 50;% setpsize for dual variable
+% tau = 0.02;  % setpsize for primal variable
+
 
 while (it<=maxit && stop== 0)
     %% update p

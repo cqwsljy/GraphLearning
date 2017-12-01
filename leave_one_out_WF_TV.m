@@ -46,30 +46,31 @@ for j=1:M
     dataTrain=data(:,index_new);
     labelTrain=FD(index_new);
     SVMStruct = fitcsvm(dataTrain',labelTrain,'Prior','uniform','Standardize',1);
-    Prediction=predict(SVMStruct,data(:,j)');
-    if Prediction==0
-        FD0(j,1)=1;
-        u00(j,1)=1;
-    else
-        FD0(j,2)=1;
-        u00(j,2)=1;
-    end
+    Prediction = predict(SVMStruct,data(:,j)');
+    
+%     if Prediction==0
+%         FD0(j,1)=1;
+%         u00(j,1)=1;
+%     else
+%         FD0(j,2)=1;
+%         u00(j,2)=1;
+%     end
     
     
-    [u1, energy1,residual1,error1]=SplitBregGraphClassK(FD0,Iset,u00,mu,lambda,d,tol,W,WT,maxit,FD);%WF
-    [uc1,FDr1]=max(u1,[],2);
-    FDr1=FDr1-1;
-    FDr1(Iset)=FD(Iset);
-    error_WF(j,1)=abs(FDr1(j)-FD(j));
-    
-    
-    
-    [u2, energy2,residual2,error2]=TV_PDHGm_ClassK(FD0,Iset,u00,lambda,tol,G,maxit,1,FD);%TV
-    [uc2,FDr2]=max(u2,[],2);
-    FDr2=FDr2-1;
-    FDr2(Iset)=FD(Iset);
-    error_TV(j,1)=abs(FDr2(j)-FD(j));
+%     [u1, energy1,residual1,error1]=SplitBregGraphClassK(FD0,Iset,u00,mu,lambda,d,tol,W,WT,maxit,FD);%WF
+%     [uc1,FDr1]=max(u1,[],2);
+%     FDr1=FDr1-1;
+%     FDr1(Iset)=FD(Iset);
+%     error_WF(j,1)=abs(FDr1(j)-FD(j));
+%     
+%     
+%     
+%     [u2, energy2,residual2,error2]=TV_PDHGm_ClassK(FD0,Iset,u00,lambda,tol,G,maxit,1,FD);%TV
+%     [uc2,FDr2]=max(u2,[],2);
+%     FDr2=FDr2-1;
+%     FDr2(Iset)=FD(Iset);
+%     error_TV(j,1)=abs(FDr2(j)-FD(j));
 end
 
-save('D:\error_WF','error_WF')
-save('D:\error_TV','error_TV')
+% save('D:\error_WF','error_WF')
+% save('D:\error_TV','error_TV')

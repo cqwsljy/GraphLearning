@@ -41,9 +41,9 @@ unew = uold;
 
 theta=1;
 % sigma, tau can be tuned
-% gamma = 0.01; % parameter for update theta
-sigma = 0.02;% setpsize for dual variable
-tau = 60;  % setpsize for primal variable
+gamma = 0.01; % parameter for update theta
+sigma = 50;% setpsize for dual variable
+tau = 0.02;  % setpsize for primal variable
 
 
 disp(['Initial is ',num2str(100*length(Iset(:))/M),'%'])

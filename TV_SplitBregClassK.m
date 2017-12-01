@@ -42,7 +42,7 @@ stop=0;
 
 
 %% parameters can be tuned
-delta = 0.0071; % stepsize for least square in update u
+delta = 0.0011; % stepsize for least square in update u
 dd = sum(G);
 D = diag(dd);
 L = D - G;
@@ -63,7 +63,7 @@ while (it<=maxit&&stop==0)
         for k = 1:K
             unew(Iset(:,k),k) = FD0(Iset(:,k),k);
         end
-%         unew = projl1p_1D(unew,1);
+        unew = projl1p_1D(unew,1);
         residualU = norm(unew(:)-uold(:))/size(unew,1);
         flag = residualU > 1e-6;
         if(mod(r,100) == 0)
@@ -81,7 +81,7 @@ while (it<=maxit&&stop==0)
     
     for k=1:K
         Du{k} = GraphGradientOperator(G,unew(:,k)); % gradient at u^{i+1}
-        d{k} = soft(Du{k} + b{k},1/mu);
+        d{k} = soft(Du{k} + b{k},G/mu);
         % tmp = Du{k} + b{k};
         %c1 = (tmp > G/mu);
         %c2 = (tmp <- G/mu);

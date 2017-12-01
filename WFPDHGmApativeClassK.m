@@ -59,8 +59,11 @@ eta = 0.5;
 P = ones(K,1); % p_{k} in reference
 D = ones(K,1); % d_{k} in reference
 
-sigma = 0.02*ones(K,1);% setpsize for dual variable
-tau = 60*ones(K,1);  % setpsize for primal variable
+sigma = 50*ones(K,1);% setpsize for dual variable
+tau = 0.02*ones(K,1);  % setpsize for primal variable
+
+
+
 disp(['Initial is ',num2str(100*length(Iset(:))/M),'%'])
 for nstep=1:maxit
     ubar = unew + theta*(unew-uold);

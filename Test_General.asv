@@ -14,9 +14,9 @@ clc
 % load('E:\data\GraphDataSyn_3Circles.mat')
 
 % generate the graph
-% h=1e4;
-% Knears = 10;
-% [L,d,lambda_max]=GenerateGraph_fun(D,h,Knears,'ZM2'); 
+h=1e4;
+Knears = 10;
+[L,d,lambda_max]=GenerateGraph_fun(D,h,Knears,'ZM2'); 
 
 [p,M] = size(D); %
 classK = length(unique(FD));
@@ -36,10 +36,8 @@ for k = 1:classK
 	eval('u00(Isetk,k) = 1;');
     eval('Iset = [Iset,Isetk];');
 end
-
 tol = 1e-5; % Tolerance
-maxit = 600; % Maximum iterations
-
+maxit = 100; % Maximum iterations
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 sindex = 1:length(d);
 G = sparse(sindex,sindex,d)-L; %é‚»æŽ¥çŸ©é˜�?
@@ -111,15 +109,13 @@ Error1 = sum(abs(FDr1-FD))/(M-length(Iset))*100;
 
 [uc,FDr2] = max(u2,[],2);
 FDr2 = FDr2-1;
+Error2 = sum(abs(FDr2-FD))/(M-length(Iset))*100;
 
-
-[uc,FDr3] = max(u3,[],2);
-FDr3 = FDr3-1;
-[fpr,fnr] = FPRandFNR(FD,FDr3)
 [uc,FDr4] = max(u4,[],2);
 FDr4 = FDr4-1;
-[fpr,fnr] = FPRandFNR(FD,FDr4)
-
+[uc,FDr4] = max(u4,[],2);
+FDr4 = FDr4-1;
+[FD,FDr4]
 %
 % figure
 % subplot(131);scatter(D(1,:),D(2,:),5,FD);title('Ground Truth');axis square;

@@ -17,7 +17,7 @@ for k=1:K
     b{k} = d{k};
     normg = normg+CoeffOperGraph('norm2',d{k});
 end
-mu =0.08;
+mu =0.05;
 [r Level] = size(d{1});
 Thresh=cell(r,Level);
 w=cell(r,Level);
