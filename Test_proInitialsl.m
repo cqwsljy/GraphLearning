@@ -44,7 +44,7 @@ tol = 1e-5; % Tolerance
 maxit = 600; % Maximum iterations
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 sindex = 1:length(d);
-G = sparse(sindex,sindex,d)-L; %é‚»æŽ¥çŸ©é˜�?
+G = sparse(sindex,sindex,d)-L; %
 % clear sindex
 
 FrameType = 'Linear'; %Haar, FrameType='Linear'; % FrameType='Cubic'; % FrameType='Pseudo-Spline31';

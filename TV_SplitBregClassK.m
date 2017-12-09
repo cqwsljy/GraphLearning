@@ -1,4 +1,4 @@
-function [unew, energy,residual,error]=TV_SplitBregClassK(FD0,Iset,u00,tol,G,maxit,mu,FD_ref)
+function [unew, energy,residual,error]=TV_SplitBregClassK(FD0,Iset,u00,mu,tol,G,maxit,FD_ref)
 % G is weight  matrix
 % min lambda \sum_i|u_i|_WTV
 % s.t u_i=FD0(:,i), sum (u_i)=1 i_i\geq 0
@@ -21,7 +21,9 @@ deltab = cell(K,1);
 %normtvg = 0;
 norm0 = norm(u00,1);
 uold = zeros(size(u00));
-unew = zeros(size(u00));
+uold = rand(size(u00));
+uold = u00;
+unew = uold;
 % compute the initial  gradient and the norm
 for k = 1:K
     Du{k} = GraphGradientOperator(G,uold(:,k));
@@ -32,17 +34,17 @@ end
 
 %p0=Du;
 
-energy=zeros(maxit,1);
-residual=zeros(maxit,1);
-error=zeros(maxit,1);
+energy = zeros(maxit,1);
+residual = zeros(maxit,1);
+error = zeros(maxit,1);
 
 
-it=1;
-stop=0;
+it = 1;
+stop = 0;
 
 
 %% parameters can be tuned
-delta = 0.0011; % stepsize for least square in update u
+delta = 0.001; % stepsize for least square in update u
 dd = sum(G);
 D = diag(dd);
 L = D - G;
@@ -113,7 +115,10 @@ while (it<=maxit&&stop==0)
     FDr(Iset(:)) = FD_ref(Iset(:));
     c = FDr == FD_ref;
     error(it)=100*(M-sum(c))/(M-length(Iset(:)));
-    if (residual<tol) 
+    if (residual(it)<tol) 
+        errors = errors(1:it);
+        residual = residual(1:it);
+        energy = energy(1:it);
         stop=1; 
     end
     if mod(it,2)==0

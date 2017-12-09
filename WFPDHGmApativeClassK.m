@@ -1,22 +1,22 @@
-function [unew, energy,residual,errors] = WFPDHGmApativeClassK(FD0,Iset,u00,lambda,dd,tol,W,WT,maxit,adap_para,FD_ref)
+function [unew, energy,residual,errors] = WFPDHGmApativeClassK(FD0,Iset,u00,lambda,dd,mu,tol,W,WT,maxit,FD_ref)
 % Jiayong Liu,2017.10.23
 % solving follwing problem
 % using K labelling functions
 % min lambda \sum_i|Wu_i| .s.t u_i=FD0 on Iset; u in Simplex.
-% reference: Adaptive primal-dual Hybrid Gradient Method for saddle-point problems
-tic;
+% reference: Adaptive primal-dual Hybrid Gradient Method for saddle-pointtic;
 [M,K]=size(u00);
 d = cell(K,1);
 Wu = cell(K,1);
 % inititalize d and b, and compute normg
 normg = 0;
 norm0 = norm(u00,1);
-for k=1:K
-    d{k}=W(u00(:,k));
+for k=1:K 
+
+    d{k} = W(u00(:,k));
     normg=normg+CoeffOperGraph('norm2',d{k});
 end
 
-mu =0.05;
+
 [r Level] = size(d{1});
 Thresh=cell(r,Level);
 w=cell(r,Level);
@@ -46,7 +46,7 @@ uold=zeros(M,K);
 WTdelta_d = cell(K,1);
 delta_d = cell(K,1);
 Wue = cell(K,1);
-% uold = rand(size(u00));
+uold = rand(size(u00));
 unew = uold;
 
 theta = 1;
@@ -59,8 +59,8 @@ eta = 0.5;
 P = ones(K,1); % p_{k} in reference
 D = ones(K,1); % d_{k} in reference
 
-sigma = 50*ones(K,1);% setpsize for dual variable
-tau = 0.02*ones(K,1);  % setpsize for primal variable
+sigma = 0.008*ones(K,1);% setpsize for dual variable
+tau = 20*ones(K,1);  % setpsize for primal variable
 
 
 
@@ -85,11 +85,11 @@ for nstep=1:maxit
     end
     unew = projl1p_1D(unew,1);
     for k = 1:K
-        Wue{k} = W(unew(:,k));
         unew(Iset(:,k),:) = 0; 
     end
     for k = 1:K
         unew(Iset(:,k),k) = FD0(Iset(:,k),k);
+        Wue{k} = W(unew(:,k));
     end
 
     % projection onto l1 ball
@@ -124,7 +124,7 @@ for nstep=1:maxit
     % Compute the enery and residual
     residual(nstep)=norm(unew-uold,1)/norm0;
     for k=1:K
-        %Wu{k}=W(unew(:,k));
+        Wue{k}=W(unew(:,k));
         energy(nstep)=energy(nstep)+CoeffOperGraph('wnorm1',Wue{k},w);
     end
     
@@ -133,10 +133,13 @@ for nstep=1:maxit
     FDr = FDr-1;FDr(Iset(:)) = FD_ref(Iset(:));
     c = FDr == FD_ref;
     errors(nstep) = 100*(M-sum(c))/(M - length(Iset(:)));%sum(c) contains length(Iset),so not minus length(Iset) on numerator
-    if residual<tol
+    if residual(nstep)<tol
+        errors = errors(1:nstep)
+        residual = residual(1:nstep)
+        energy = energy(1:nstep)
         break;
     end
-    if mod(nstep,20)==0
+    if mod(nstep,1)==0
         Tm=toc;
         display(['Step = ' num2str(nstep) '; Residual = ' num2str(residual(nstep)) '; Energy = ' num2str(energy(nstep)) '; Accuracy = ' num2str(100-errors(nstep)) '%; Time Elapsed = ' num2str(Tm)]);
     end

@@ -32,7 +32,8 @@ energy = zeros(maxit,1);
 residual = zeros(maxit,1);
 error = zeros(maxit,1);
 
-uold=zeros(M,K);
+% uold = zeros(M,K);
+uold = rand(size(u00));
 unew = uold;
 %uold = u00;
 %unew = u00;
@@ -44,8 +45,12 @@ stop = 0;
 theta = 1;
 %% parameters can be tuned
 gamma = 0.01;
-sigma = sqrt(1/10)*10;
-tau = sqrt(1/10)/100;
+% sigma = sqrt(1/10)*10;
+% tau = sqrt(1/10)/200;
+
+sigma = 0.02;% setpsize for dual variable
+tau = 20;  % setpsize for primal variable
+
 
 % sigma = 50;% setpsize for dual variable
 % tau = 0.02;  % setpsize for primal variable
@@ -103,6 +108,9 @@ while (it<=maxit && stop== 0)
     c = FDr == FD_ref;
     error(it)=100*(M-sum(c))/(M-length(Iset(:)));
     if (residual(it) < tol) 
+        errors = errors(1:it)
+        residual = residual(1:it)
+        energy = energy(1:it)
         stop=1; 
     end
     if mod(it,2)==0

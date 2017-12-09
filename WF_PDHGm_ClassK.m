@@ -1,4 +1,4 @@
-function [unew, energy,residual,errors] = WF_PDHGm_ClassK(FD0,Iset,u00,lambda,dd,tol,W,WT,maxit,adap_para,FD_ref)
+function [unew, energy,residual,errors] = WF_PDHGm_ClassK(FD0,Iset,u00,lambda,dd,mu,tol,W,WT,maxit,adap_para,FD_ref)
 % using K labelling functions
 % min lambda \sum_i|Wu_i| .s.t u_i=FD0 on Iset; u in Simplex.
 tic;
@@ -12,10 +12,11 @@ normg = 0;
 norm0 = norm(u00,1);
 
 for k=1:K
-    d{k}=W(u00(:,k));
+    d{k} = W(u00(:,k));
     normg = normg+CoeffOperGraph('norm2',d{k});
 end
-mu = 0.05;
+
+
 [r Level]=size(d{1});
 w = cell(r,Level);
 Thresh = w;
@@ -35,16 +36,16 @@ end
 energy = zeros(maxit,1);
 residual = zeros(maxit,1);
 errors = zeros(maxit,1);
-% uold = rand(size(u00));
-uold = zeros(M,K);
+uold = randn(size(u00));
+% uold = zeros(M,K);
+% uold = u00;
 unew = uold;
 
-theta=1;
+theta = 1;
 % sigma, tau can be tuned
 gamma = 0.01; % parameter for update theta
-sigma = 50;% setpsize for dual variable
-tau = 0.02;  % setpsize for primal variable
-
+sigma = 0.02;% setpsize for dual variable
+tau = 20;  % setpsize for primal variable
 
 disp(['Initial is ',num2str(100*length(Iset(:))/M),'%'])
 for nstep=1:maxit
@@ -65,16 +66,18 @@ for nstep=1:maxit
         
     end
     % projection onto l1 ball
+    %%{
+    % unew = projl1p_1D(unew,1);
+
     unew = projl1p_1D(unew,1);
     for k = 1:K
-        Wue{k} = W(unew(:,k));
         unew(Iset(:,k),:) = 0; 
     end
     for k = 1:K
         unew(Iset(:,k),k) = FD0(Iset(:,k),k);
+        Wue{k} = W(unew(:,k));
     end
-    unew = projl1p_1D(unew,1);
-    
+    %}
 
     % update  parameter: optional
     %{
@@ -89,7 +92,7 @@ for nstep=1:maxit
     % Compute the enery and residual
     residual(nstep)=norm(unew-uold,1)/norm0;
     for k=1:K
-        Wu{k}=W(unew(:,k));
+        Wue{k}=W(unew(:,k));
         energy(nstep)=energy(nstep) + CoeffOperGraph('wnorm1',Wue{k},w);
     end
     
@@ -98,10 +101,13 @@ for nstep=1:maxit
     FDr = FDr-1;FDr(Iset(:)) = FD_ref(Iset(:));
     c = FDr == FD_ref;
     errors(nstep) = 100*(M-sum(c))/(M - length(Iset(:)));%sum(c) contains length(Iset),so not minus length(Iset) on numerator
-    if residual<tol
+    if residual(nstep)<tol
+        errors = errors(1:nstep)
+        residual = residual(1:nstep)
+        energy = energy(1:nstep)
         break;
     end
-    if mod(nstep,20)==0
+    if mod(nstep,1)==0
         Tm=toc;
         display(['Step = ' num2str(nstep) '; Residual = ' num2str(residual(nstep)) '; Energy = ' num2str(energy(nstep)) '; Accuracy = ' num2str(100-errors(nstep)) '%; Time Elapsed = ' num2str(Tm)]);
     end

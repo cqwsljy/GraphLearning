@@ -4,7 +4,6 @@ clc
 % load HippoMCIcvsMCInc133.mat
 % load HippoWaveleteAD_NC_MCI_811.mat
 % load HippoWaveleteAD_NC_416.mat
-
 % load mnistAll.mat
 % load mnistAllZM1.mat
 % load('mnist49Z2.mat')
@@ -38,33 +37,30 @@ for k = 1:classK
 end
 
 tol = 1e-5; % Tolerance
-maxit = 600; % Maximum iterations
-
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-sindex = 1:length(d);
-G = sparse(sindex,sindex,d)-L; %é‚»æŽ¥çŸ©é˜�?
-% clear sindex
-
-FrameType = 'Linear'; %Haar, FrameType='Linear'; % FrameType='Cubic'; % FrameType='Pseudo-Spline31';
-[DFilters, RFilters] = ExtractMasks(FrameType);
+maxit = 200; % Maximum iterations
 s = 2; % Dilation scale
 n = 10; % n-1 = Degree of Chebyshev Polynomial Approximation
 Lev = 1; % Level of transform
 lambda = 1; % As in lambda||Wu||_1
 mu = 1e-2; % Parameter from ADMM
-M = length(L);
+%%
+sindex = 1:length(d);
+G = sparse(sindex,sindex,d)-L;
+
+%% clear sindex
+FrameType = 'Linear'; %Haar, FrameType='Linear'; % FrameType='Cubic'; % FrameType='Pseudo-Spline31';
+[DFilters, RFilters] = ExtractMasks(FrameType);
 J = log(lambda_max/pi)/log(s)+Lev-1; % Dilation level to start the decomposition
 W = @(FD)(GraphWFTG_Decomp(FD,L,DFilters,n,s,J,Lev));
 WT = @(d)(GraphWFTG_Recon(d,L,RFilters,n,s,J,Lev));
 
 disp('WF Model By PDHG...')
-[u1,energy1,residual1,error1] = WF_PDHGm_ClassK(FD0,Iset,u00,lambda,d,tol,W,WT,maxit,1,FD);
-
-disp('WF Model By Adaptive PDHG...')
-[u5, energy5,residual5,error5] = WFPDHGmApativeClassK(FD0,Iset,u00,lambda,d,tol,W,WT,maxit,1,FD);
+[u1,energy1,residual1,error1] = WF_PDHGm_ClassK(FD0,Iset,u00,lambda,d,mu,tol,W,WT,maxit,1,FD);
 
 disp('WF Model By ADMM...')
-[u2, energy2,residual2,error2] = SplitBregGraphClassK(FD0,Iset,u00,mu,lambda,d,tol,W,WT,maxit,FD);
+[u2, energy2,residual2,error2] = SplitBregGraphClassK(FD0,Iset,u00,lambda,d,mu,tol,W,WT,maxit,FD);
+
+[u5, energy5,residual5,error5] = WFPDHGmApativeClassK(FD0,Iset,u00,lambda,d,mu,tol,W,WT,maxit,FD);
 
 [~,FDr1] = max(u1,[],2);FDr1 = FDr1-1;
 [fpr,fnr] = FPRandFNR(FD,FDr1)
@@ -91,12 +87,12 @@ subplot(133);plot((error1)),title('WF Error');
 
 
 
-lambda = 0.05; % As in lambda||u||_TV
+% lambda = 0.05; % As in lambda||u||_TV
 disp('TV Model By PDHG...')
 [u3, energy3,residual3,error3] = TV_PDHGm_ClassK(FD0,Iset,u00,lambda,tol,G,maxit,1,FD);
 
 disp('TV Model By ADMM...')
-[u4, energy4,residual4,error4] = TV_SplitBregClassK(FD0,Iset,u00,tol,G,maxit,mu,FD);
+[u4, energy4,residual4,error4] = TV_SplitBregClassK(FD0,Iset,u00,mu,tol,G,maxit,FD);
 
 
 figure
@@ -180,12 +176,6 @@ legend('PDHGm','ADMM','Adaptive PDHG')
 xlabel('iteration')
 ylabel('log10(energy)')
 
-semilogy(energy1,'LineWidth',1.5);hold on
-semilogy(energy5,'LineWidth',1.5)
-legend('PDHGm','Adaptive PDHG')
-
-
-
 subplot(122);
 plot(error1,'LineWidth',1.5);hold on
 plot(error2,'LineWidth',1.5)
@@ -194,11 +184,20 @@ xlabel('iteration')
 ylabel('error')
 legend('PDHGm','ADMM','Adaptive PDHG')
 
+semilogy(energy1,'LineWidth',1.5);hold on
+semilogy(energy5,'LineWidth',1.5)
+legend('PDHGm','Adaptive PDHG')
+
+
+
+
+
 %% plot haar and linear
 subplot(231);
 plot(energy11,'LineWidth',1.5);hold on
 plot(energy1,'LineWidth',1.5)
 legend('Haar','Linear')
+% legend('Linear','Haar')
 xlabel('iteration')
 ylabel('energy')
 title('WF PDHGm')
@@ -207,6 +206,7 @@ subplot(232);
 plot(energy21,'LineWidth',1.5);hold on
 plot(energy2,'LineWidth',1.5)
 legend('Haar','Linear')
+% legend('Linear','Haar')
 xlabel('iteration')
 ylabel('energy')
 title('WF ADMM')
@@ -215,6 +215,7 @@ subplot(233);
 plot(energy51,'LineWidth',1.5);hold on
 plot(energy5,'LineWidth',1.5)
 legend('Haar','Linear')
+% legend('Linear','Haar')
 xlabel('iteration')
 ylabel('energy')
 title('WF Adaptive PDHG')
@@ -224,6 +225,7 @@ subplot(234);
 plot(error11,'LineWidth',1.5);hold on
 plot(error1,'LineWidth',1.5)
 legend('Haar','Linear')
+% legend('Linear','Haar')
 xlabel('iteration')
 ylabel('error')
 title('WF PDHGm')
@@ -232,6 +234,7 @@ subplot(235);
 plot(error21,'LineWidth',1.5);hold on
 plot(error2,'LineWidth',1.5)
 legend('Haar','Linear')
+% legend('Linear','Haar')
 xlabel('iteration')
 ylabel('error')
 title('WF ADMM')
@@ -240,6 +243,7 @@ subplot(236);
 plot(error51,'LineWidth',1.5);hold on
 plot(error5,'LineWidth',1.5)
 legend('Haar','Linear')
+% legend('Linear','Haar')
 xlabel('iteration')
 ylabel('error')
 title('WF Adaptive PDHG')
@@ -266,3 +270,27 @@ subplot(121);scatter3(D(index(1),:),D(index(2),:),D(index(3),:),5,FD)
 index = [10,30,60];
 subplot(122);scatter3(D(index(1),:),D(index(2),:),D(index(3),:),5,FD)
 
+%% plot TV model,PDHGm and ADMM
+subplot(141)
+plot(log10(energy3),'LineWidth',1.5);
+xlabel('iteration')
+ylabel('log10(energy)')
+title('TV PDHGm')
+
+subplot(142)
+plot(log10(energy4),'LineWidth',1.5);
+xlabel('iteration')
+ylabel('log10(energy)')
+title('TV ADMM')
+
+subplot(143)
+plot(error3,'LineWidth',1.5);
+xlabel('iteration')
+ylabel('error')
+title('TV PDHGm')
+
+subplot(144)
+plot(error4,'LineWidth',1.5);hold on
+xlabel('iteration')
+ylabel('error')
+title('TV ADMM')
