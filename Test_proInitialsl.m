@@ -24,51 +24,51 @@ proInitials = [0.01,0.03,0.1,0.15,0.2];
 errors = zeros(length(proInitials),3);
 pro = 1;
 for proInitial = proInitials
-    
-Srate = round(proInitial * M /classK);
+	    
+	Srate = round(proInitial * M /classK);
 
-FD0 = zeros(M,classK);
-u00 = zeros(M,classK);
-Iset = [];
-for k = 1:classK
-	index = find(FD == k - 1);
-	I = randperm(length(index));
-	index = index(I);
-	Isetk = ['Iset',num2str(k)];
-	eval('Isetk=index(1:Srate);');
-	eval('FD0(Isetk,k) = 1;');
-	eval('u00(Isetk,k) = 1;');
-    eval('Iset = [Iset,Isetk];');
-end
-tol = 1e-5; % Tolerance
-maxit = 600; % Maximum iterations
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-sindex = 1:length(d);
-G = sparse(sindex,sindex,d)-L; %
-% clear sindex
+	FD0 = zeros(M,classK);
+	u00 = zeros(M,classK);
+	Iset = [];
+	for k = 1:classK
+		index = find(FD == k - 1);
+		I = randperm(length(index));
+		index = index(I);
+		Isetk = ['Iset',num2str(k)];
+		eval('Isetk=index(1:Srate);');
+		eval('FD0(Isetk,k) = 1;');
+		eval('u00(Isetk,k) = 1;');
+	    eval('Iset = [Iset,Isetk];');
+	end
+	tol = 1e-5; % Tolerance
+	maxit = 600; % Maximum iterations
+	%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	sindex = 1:length(d);
+	G = sparse(sindex,sindex,d)-L; %
+	% clear sindex
 
-FrameType = 'Linear'; %Haar, FrameType='Linear'; % FrameType='Cubic'; % FrameType='Pseudo-Spline31';
-[DFilters, RFilters] = ExtractMasks(FrameType);
-s = 2; % Dilation scale
-n = 10; % n-1 = Degree of Chebyshev Polynomial Approximation
-Lev = 1; % Level of transform
-lambda = 0.01; % As in lambda||Wu||_1
-mu = 1e-2; % Parameter from ADMM
-M = length(L);
-J = log(lambda_max/pi)/log(s)+Lev-1; % Dilation level to start the decomposition
-W = @(FD)(GraphWFTG_Decomp(FD,L,DFilters,n,s,J,Lev));
-WT = @(d)(GraphWFTG_Recon(d,L,RFilters,n,s,J,Lev));
+	FrameType = 'Linear'; %Haar, FrameType='Linear'; % FrameType='Cubic'; % FrameType='Pseudo-Spline31';
+	[DFilters, RFilters] = ExtractMasks(FrameType);
+	s = 2; % Dilation scale
+	n = 10; % n-1 = Degree of Chebyshev Polynomial Approximation
+	Lev = 1; % Level of transform
+	lambda = 0.01; % As in lambda||Wu||_1
+	mu = 1e-2; % Parameter from ADMM
+	M = length(L);
+	J = log(lambda_max/pi)/log(s)+Lev-1; % Dilation level to start the decomposition
+	W = @(FD)(GraphWFTG_Decomp(FD,L,DFilters,n,s,J,Lev));
+	WT = @(d)(GraphWFTG_Recon(d,L,RFilters,n,s,J,Lev));
 
-disp('WF Model By PDHG...')
-[u1,energy1,residual1,error1] = WF_PDHGm_ClassK(FD0,Iset,u00,lambda,d,tol,W,WT,maxit,1,FD);
+	disp('WF Model By PDHG...')
+	[u1,energy1,residual1,error1] = WF_PDHGm_ClassK(FD0,Iset,u00,lambda,d,mu,tol,W,WT,maxit,1,FD);
 
-disp('WF Model By ADMM...')
-[u2, energy2,residual2,error2] = SplitBregGraphClassK(FD0,Iset,u00,mu,lambda,d,tol,W,WT,maxit,FD);
+	disp('WF Model By ADMM...')
+	[u2, energy2,residual2,error2] = SplitBregGraphClassK(FD0,Iset,u00,lambda,d,mu,tol,W,WT,maxit,FD);
 
-disp('WF Model By Adaptive PDHG...')
-[u5, energy5,residual5,error5] = WFPDHGmApativeClassK(FD0,Iset,u00,lambda,d,tol,W,WT,maxit,1,FD);
-errors(pro,:) = [100 - min(error1),100 - min(error2),100 - min(error5)];
-pro = pro + 1;
+	disp('WF Model By Adaptive PDHG...')
+	[u5, energy5,residual5,error5] = WFPDHGmApativeClassK(FD0,Iset,u00,lambda,d,mu,tol,W,WT,maxit,FD);
+	errors(pro,:) = [100 - min(error1),100 - min(error2),100 - min(error5)];
+	pro = pro + 1;
 end
 %{
 figure

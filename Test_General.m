@@ -176,6 +176,7 @@ legend('PDHGm','ADMM','Adaptive PDHG')
 xlabel('iteration')
 ylabel('log10(energy)')
 
+
 subplot(122);
 plot(error1,'LineWidth',1.5);hold on
 plot(error2,'LineWidth',1.5)
