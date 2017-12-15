@@ -28,8 +28,8 @@ unew = uold;
 for k = 1:K
     Du{k} = GraphGradientOperator(G,uold(:,k));
     %normtvg = normtvg+sum(sum(G.*Du{k}));
-    d{k} = rand(size(Du{k}));
-    b{k} = rand(size(Du{k}));
+    d{k} = Du{k} ;
+    b{k} = Du{k} ;
 end
 
 %p0=Du;

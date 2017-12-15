@@ -3,6 +3,7 @@ clear
 clc
 % load HippoMCIcvsMCInc133.mat
 % load HippoWaveleteAD_NC_MCI_811.mat
+% load('E:\data\HippoWaveleteAD_MCI_811_585.mat')
 % load HippoWaveleteAD_NC_416.mat
 % load mnistAll.mat
 % load mnistAllZM1.mat
@@ -70,7 +71,7 @@ disp('WF Model By ADMM...')
 [fpr,fnr] = FPRandFNR(FD,FDr5)
 
 
-% energy11 = energy1;
+energy11 = energy1;
 % energy21 = energy1;
 % energy51 = energy1;
 % 
@@ -295,3 +296,24 @@ plot(error4,'LineWidth',1.5);hold on
 xlabel('iteration')
 ylabel('error')
 title('TV ADMM')
+
+
+
+subplot(121)
+plot(log10(energy3),'LineWidth',1.5);hold on
+plot(log10(energy4),'LineWidth',1.5);
+xlabel('iteration')
+ylabel('log10(energy)')
+title('TV PDHGm')
+legend('TV PDHGM','TV ADMM')
+
+subplot(122)
+plot(error3,'LineWidth',1.5);hold on
+plot(error4,'LineWidth',1.5);
+xlabel('iteration')
+ylabel('error')
+title('TV PDHGm')
+legend('TV PDHGM','TV ADMM')
+
+
+

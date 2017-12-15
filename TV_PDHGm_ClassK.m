@@ -1,4 +1,4 @@
-function [unew, energy,residual,error]=TV_PDHGm_K(FD0,Iset,u00,lambda,tol,G,maxit,adap_para,FD_ref)
+function [unew, energy,residual,errors]=TV_PDHGm_K(FD0,Iset,u00,lambda,tol,G,maxit,adap_para,FD_ref)
 % G is weight  matrix
 % min lambda \sum_i|u_i|_WTV
 % s.t u_i=FD0(:,i), sum (u_i)=1 i_i\geq 0
@@ -23,14 +23,14 @@ norm0=norm(u00,1);
 for k=1:K
     Du{k} = GraphGradientOperator(G,u00(:,k));
     % normtvg=normtvg+sum(sum(G.*Du{k}));
-    p0{k}=zeros(size(Du{k}));
+    p0{k} =  Du{k};
 end
 
 %p0=Du;
 
 energy = zeros(maxit,1);
 residual = zeros(maxit,1);
-error = zeros(maxit,1);
+errors = zeros(maxit,1);
 
 % uold = zeros(M,K);
 uold = rand(size(u00));
@@ -45,20 +45,20 @@ stop = 0;
 theta = 1;
 %% parameters can be tuned
 gamma = 0.01;
-% sigma = sqrt(1/10)*10;
-% tau = sqrt(1/10)/200;
 
-sigma = 0.02;% setpsize for dual variable
-tau = 20;  % setpsize for primal variable
+% sigma = sqrt(1/10)/100;
+% tau = sqrt(1/10)*100;
 
+% sigma = 0.02;% setpsize for dual variable
+% tau = 10;  % setpsize for primal variable
 
-% sigma = 50;% setpsize for dual variable
-% tau = 0.02;  % setpsize for primal variable
+sigma = 0.001;% setpsize for dual variable
+tau = 300;  % setpsize for primal variable
 
 
 while (it<=maxit && stop== 0)
     %% update p
-    ubar=unew + theta*(unew - uold);
+    ubar = unew + theta*(unew - uold);
     for k=1:K
         Du{k} = GraphGradientOperator(G,ubar(:,k)); 
         p0{k} = p0{k} + sigma*Du{k}; % old p is not stored due to the large memory
@@ -106,17 +106,17 @@ while (it<=maxit && stop== 0)
     FDr = FDr-1;
     FDr(Iset(:)) = FD_ref(Iset(:));
     c = FDr == FD_ref;
-    error(it)=100*(M-sum(c))/(M-length(Iset(:)));
+    errors(it)=100*(M-sum(c))/(M-length(Iset(:)));
     if (residual(it) < tol) 
-        errors = errors(1:it)
-        residual = residual(1:it)
-        energy = energy(1:it)
+        errors = errors(1:it);
+        residual = residual(1:it);
+        energy = energy(1:it);
         stop=1; 
     end
     if mod(it,2)==0
         Tm=toc;
         display( num2str(sum(abs(unew(:)-uold(:)))/length(unew)) );
-        display(['Step = ' num2str(it) '; Residual = ' num2str(residual(it)) '; Energy = ' num2str(energy(it)) '; Accuracy = ' num2str(100-error(it)) '%; Time Elapsed = ' num2str(Tm)]);
+        display(['Step = ' num2str(it) '; Residual = ' num2str(residual(it)) '; Energy = ' num2str(energy(it)) '; Accuracy = ' num2str(100-errors(it)) '%; Time Elapsed = ' num2str(Tm)]);
     end
     it=it+1;
 end
