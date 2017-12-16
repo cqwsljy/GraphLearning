@@ -20,9 +20,9 @@ deltab = cell(K,1);
 % inititalize d and b, and compute normg
 %normtvg = 0;
 norm0 = norm(u00,1);
-uold = zeros(size(u00));
+% uold = zeros(size(u00));
 uold = rand(size(u00));
-uold = u00;
+% uold = u00;
 unew = uold;
 % compute the initial  gradient and the norm
 for k = 1:K

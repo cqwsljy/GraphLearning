@@ -20,7 +20,7 @@ clc
 
 [p,M] = size(D); %
 classK = length(unique(FD));
-proInitial = 0.03;
+proInitial = 0.0357;
 Srate = round(proInitial * M /classK);
 
 FD0 = zeros(M,classK);

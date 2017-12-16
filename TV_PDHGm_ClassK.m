@@ -34,9 +34,9 @@ errors = zeros(maxit,1);
 
 % uold = zeros(M,K);
 uold = rand(size(u00));
-unew = uold;
-%uold = u00;
-%unew = u00;
+% unew = uold;
+% uold = u00;
+unew = u00;
 
 it = 1;
 stop = 0;
